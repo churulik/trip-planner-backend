@@ -1,0 +1,4 @@
+.yarn
+.idea
+.env
+/node_modules
