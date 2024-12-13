@@ -12,8 +12,9 @@ export const signUp = async (req, res) => {
   try {
     const email = (req.body.email || '').trim();
     const password = (req.body.password || '').trim();
+    const name = (req.body.name || '').trim();
 
-    if (!email || !password) {
+    if (!email || !password || !name) {
       return res.status(400).send({ message: 'INVALID_REQUEST' });
     }
 
@@ -21,10 +22,11 @@ export const signUp = async (req, res) => {
     const createdOn = formatDateTimeToMysql();
     const sessionId = nanoid();
     await connection.execute(
-      'insert into user (email, password, created_on, web_session_id, web_session_expires_on, last_log_in) values (?, ?, ?, ?, ?, ?)',
+      'insert into user (email, password, name, created_on, web_session_id, web_session_expires_on, last_log_in) values (?, ?, ?, ?, ?, ?, ?)',
       [
         req.body.email,
         encryptedPassword,
+        name,
         createdOn,
         sessionId,
         setSessionExpirationDate(),
@@ -110,4 +112,30 @@ export const changePassword = async (req, res) => {
   );
 
   res.send({ message: 'OK' });
+};
+
+export const getUserBySession = async (req, res) => {
+  const { sessionId } = req.body;
+
+  if (!sessionId) {
+    return res.status(400).send('INVALID_REQUEST');
+  }
+
+  const rows = await connection.execute(
+    `select name, email from user where web_session_id = ? and web_session_expires_on > ?`,
+    [sessionId, formatDateTimeToMysql()],
+  );
+
+  if (!rows.length) {
+    return res.status(401);
+  }
+
+  await connection.query(
+    `update user
+       set web_session_expires_on = '${setSessionExpirationDate()}'
+       where web_session_id = '${sessionId}'`,
+  );
+
+  console.log(rows[0]);
+  res.send(rows[0]);
 };

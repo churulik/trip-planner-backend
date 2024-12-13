@@ -20,7 +20,8 @@
     "mariadb": "^3.4.0",
     "nanoid": "^5.0.9",
     "openai": "^4.75.0",
-    "prettier": "^3.4.1"
+    "prettier": "^3.4.1",
+    "sharp": "^0.33.5"
   },
   "devDependencies": {
     "dotenv": "^16.4.5",

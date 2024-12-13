@@ -3,7 +3,6 @@ import connection from './db-connection.js';
 const getFirstAcceptLanguage = (acceptLanguage) => {
   try {
     let firstLanguage = acceptLanguage.split(',')[0].toLowerCase();
-    console.log(firstLanguage);
     if (firstLanguage.startsWith('en')) {
       return 'en';
     }
@@ -16,7 +15,7 @@ const getFirstAcceptLanguage = (acceptLanguage) => {
   }
 };
 
-export const translation = async (req, res) => {
+export const getTranslation = async (req, res) => {
   let language = req.query.language;
 
   if (!language) {
@@ -45,7 +44,7 @@ export const translation = async (req, res) => {
   });
 };
 
-export const languages = async (req, res) => {
+export const getLanguages = async (req, res) => {
   const rows = await connection.query(`SELECT * FROM language`);
   res.send(rows);
 };

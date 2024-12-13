@@ -1,0 +1,71 @@
+import connection from './db-connection.js';
+import axios from 'axios';
+import sharp from 'sharp';
+import cache from './cache.js';
+import { PIXABAY_API_KEY } from './constants.js';
+
+export const getDestinations = async (req, res) => {
+  if (cache.has('DESTINATIONS')) {
+    return res.status(200).send(cache.get('DESTINATIONS'));
+  }
+
+  const destinations = await connection.query(
+    `select * from destination order by substring(en, 1, 1), population desc`,
+  );
+
+  const citiesObj = {};
+
+  destinations.forEach((destination) => {
+    const firstLetter = destination.en.charAt(0).toLowerCase();
+    if (!citiesObj[firstLetter]) {
+      citiesObj[firstLetter] = [];
+    }
+
+    const split = destination.en.split(', ');
+    const cityObj = {
+      id: destination.id,
+      city: split[0],
+      state: split.length === 3 ? split[1] : undefined,
+      country: split.length === 3 ? split[2] : split[1],
+      countryCode: destination.country_code.toLowerCase(),
+    };
+    citiesObj[firstLetter].push(cityObj);
+  });
+
+  res.json(citiesObj);
+};
+
+export const getDestinationImage = async (req, res) => {
+  const { id } = req.params;
+  const city = await connection.execute(
+    `select * from destination where id = '${id}' limit 1`,
+  );
+
+  if (!city.length) {
+    return res.status(400).send({ message: 'INVALID_CITY_ID' });
+  }
+  try {
+    const q = city[0].en.split(', ').join('+');
+    const { data } = await axios(
+      `https://pixabay.com/api?key=${PIXABAY_API_KEY}&q=${q}&horizontal=horizontal&category=travel&editors_choice=false&safesearch=true&per_page=50&image_type=photo`,
+    );
+
+    if (data.hits.length) {
+      const i = Math.floor(Math.random() * data.hits.length);
+      const img = data.hits[i].largeImageURL;
+      console.log(img);
+      const imageResponse = await axios.get(img, {
+        responseType: 'arraybuffer',
+      });
+      const webpBuffer = await sharp(imageResponse.data)
+        .webp({ quality: 90 }) // Set WebP quality (0-100)
+        .toBuffer();
+      res.setHeader('Content-Type', 'image/webp');
+      res.send(webpBuffer);
+    } else {
+      res.send();
+    }
+  } catch (error) {
+    res.status(400).send({ message: 'INVALID_CITY_ID' });
+  }
+};
