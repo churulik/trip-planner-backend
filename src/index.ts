@@ -7,8 +7,8 @@ import {
   logOut,
   signUp,
 } from './auth.js';
-import { getLanguages, getTranslation } from './getTranslation.js';
-import { postPlan } from './postPlan.js';
+import { getLanguages, getTranslation } from './translation.js';
+import { postPlan } from './plan.js';
 import { getDestinations, getDestinationImage } from './destination.js';
 
 const app = express();

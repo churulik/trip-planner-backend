@@ -1,0 +1,206 @@
+{
+  "destination": "Italy",
+  "duration": "5 days",
+  "itinerary": [
+    {
+      "day": 1,
+      "title": "Rome - The Eternal City",
+      "activities": [
+        {
+          "time": "Morning",
+          "activities": [
+            {
+              "activity": "Colosseum Tour",
+              "description": "Explore the iconic Colosseum and learn about its history."
+            },
+            {
+              "activity": "Roman Forum",
+              "description": "Walk through the ancient ruins of the Roman Forum."
+            }
+          ]
+        },
+        {
+          "time": "Afternoon",
+          "activities": [
+            {
+              "activity": "Pantheon",
+              "description": "Visit the Pantheon and admire its architectural beauty."
+            },
+            {
+              "activity": "Trevi Fountain",
+              "description": "Throw a coin in the Trevi Fountain for good luck."
+            }
+          ]
+        },
+        {
+          "time": "Evening",
+          "activities": [
+            {
+              "activity": "Dinner at a traditional Italian restaurant",
+              "description": "Enjoy an authentic Italian dinner featuring local pasta dishes and wines."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "Florence - The Art Capital",
+      "activities": [
+        {
+          "time": "Morning",
+          "activities": [
+            {
+              "activity": "Uffizi Gallery",
+              "description": "Visit the Uffizi Gallery to see masterpieces by Botticelli, Michelangelo, and Leonardo da Vinci."
+            }
+          ]
+        },
+        {
+          "time": "Afternoon",
+          "activities": [
+            {
+              "activity": "Ponte Vecchio",
+              "description": "Stroll along the Ponte Vecchio and explore the shops and jewelry stores."
+            },
+            {
+              "activity": "Piazza della Signoria",
+              "description": "Visit the outdoor museum with replicas of famous sculptures."
+            }
+          ]
+        },
+        {
+          "time": "Evening",
+          "activities": [
+            {
+              "activity": "Dinner at a local trattoria",
+              "description": "Savor Florentine specialties like bistecca alla fiorentina."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "Venice - The City of Canals",
+      "activities": [
+        {
+          "time": "Morning",
+          "activities": [
+            {
+              "activity": "Gondola Ride",
+              "description": "Take a traditional gondola ride through the canals of Venice."
+            },
+            {
+              "activity": "St. Mark's Basilica",
+              "description": "Visit the stunning St. Mark's Basilica."
+            }
+          ]
+        },
+        {
+          "time": "Afternoon",
+          "activities": [
+            {
+              "activity": "Doge's Palace",
+              "description": "Explore the opulent Doge's Palace and learn about Venetian history."
+            },
+            {
+              "activity": "Rialto Market",
+              "description": "Wander through the Rialto Market and try local Venetian snacks."
+            }
+          ]
+        },
+        {
+          "time": "Evening",
+          "activities": [
+            {
+              "activity": "Dinner by the canals",
+              "description": "Enjoy a romantic dinner at a waterfront restaurant."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "title": "Pisa and Tuscany",
+      "activities": [
+        {
+          "time": "Morning",
+          "activities": [
+            {
+              "activity": "Leaning Tower of Pisa",
+              "description": "Visit the Leaning Tower of Pisa and take memorable photos."
+            }
+          ]
+        },
+        {
+          "time": "Afternoon",
+          "activities": [
+            {
+              "activity": "Tuscan Countryside",
+              "description": "Drive through the scenic Tuscan countryside and visit charming towns."
+            },
+            {
+              "activity": "Wine Tasting",
+              "description": "Enjoy wine tasting in a Tuscan vineyard."
+            }
+          ]
+        },
+        {
+          "time": "Evening",
+          "activities": [
+            {
+              "activity": "Tuscan Dinner",
+              "description": "Indulge in a traditional Tuscan dinner at a countryside restaurant."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "title": "Return to Rome",
+      "activities": [
+        {
+          "time": "Morning",
+          "activities": [
+            {
+              "activity": "Vatican City",
+              "description": "Visit Vatican City and explore the Vatican Museums and Sistine Chapel."
+            }
+          ]
+        },
+        {
+          "time": "Afternoon",
+          "activities": [
+            {
+              "activity": "St. Peter's Basilica",
+              "description": "Climb to the top of St. Peter's Basilica for a panoramic view of Rome."
+            },
+            {
+              "activity": "Final Shopping",
+              "description": "Do some final souvenir shopping at Via del Corso."
+            }
+          ]
+        },
+        {
+          "time": "Evening",
+          "activities": [
+            {
+              "activity": "Farewell Dinner",
+              "description": "Enjoy a farewell dinner at a rooftop restaurant with a view of the city."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "travel_tips": [
+    "Wear comfortable walking shoes for exploring the cities.",
+    "Be prepared for the tourist crowds, especially in Rome and Venice.",
+    "Learn a few basic Italian phrases to help with directions and ordering food.",
+    "Make reservations for major attractions like the Colosseum and Uffizi Gallery to avoid long waits.",
+    "Carry a map or use a navigation app to help find your way around the cities."
+  ]
+}

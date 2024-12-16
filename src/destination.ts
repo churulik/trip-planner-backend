@@ -1,19 +1,21 @@
-import connection from './db-connection.js';
 import axios from 'axios';
 import sharp from 'sharp';
+import { Request, Response } from 'express';
+import connection from './db-connection.js';
 import cache from './cache.js';
 import { PIXABAY_API_KEY } from './constants.js';
 
-export const getDestinations = async (req, res) => {
+export const getDestinations = async (_: Request, res: Response) => {
   if (cache.has('DESTINATIONS')) {
-    return res.status(200).send(cache.get('DESTINATIONS'));
+    res.status(200).send(cache.get('DESTINATIONS'));
+    return;
   }
 
-  const destinations = await connection.query(
-    `select * from destination order by substring(en, 1, 1), population desc`,
-  );
+  const destinations = await connection.query<
+    { id: number; en: string; country_code: string; population: number }[]
+  >(`select * from destination order by substring(en, 1, 1), population desc`);
 
-  const citiesObj = {};
+  const citiesObj: { [key: string]: {}[] } = {};
 
   destinations.forEach((destination) => {
     const firstLetter = destination.en.charAt(0).toLowerCase();
@@ -35,14 +37,15 @@ export const getDestinations = async (req, res) => {
   res.json(citiesObj);
 };
 
-export const getDestinationImage = async (req, res) => {
+export const getDestinationImage = async (req: Request, res: Response) => {
   const { id } = req.params;
   const city = await connection.execute(
     `select * from destination where id = '${id}' limit 1`,
   );
 
   if (!city.length) {
-    return res.status(400).send({ message: 'INVALID_CITY_ID' });
+    res.status(400).send({ message: 'INVALID_CITY_ID' });
+    return;
   }
   try {
     const q = city[0].en.split(', ').join('+');
@@ -52,9 +55,7 @@ export const getDestinationImage = async (req, res) => {
 
     if (data.hits.length) {
       const i = Math.floor(Math.random() * data.hits.length);
-      const img = data.hits[i].largeImageURL;
-      console.log(img);
-      const imageResponse = await axios.get(img, {
+      const imageResponse = await axios.get(data.hits[i].largeImageURL, {
         responseType: 'arraybuffer',
       });
       const webpBuffer = await sharp(imageResponse.data)

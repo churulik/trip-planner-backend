@@ -5,7 +5,7 @@ import { MAILGUN_API_KEY } from './constants.js';
 const mailgun = new Mailgun(formData);
 const mg = mailgun.client({
   username: 'api',
-  key: MAILGUN_API_KEY,
+  key: MAILGUN_API_KEY as string,
 });
 
 mg.messages

@@ -1,28 +1,30 @@
 import bcrypt from 'bcrypt';
-import { formatDateTimeToMysql, setSessionExpirationDate } from './utils.js';
 import { nanoid } from 'nanoid';
+import { Request, Response } from 'express';
+import { formatDateTimeToMysql, setSessionExpirationDate } from './utils.js';
 import connection from './db-connection.js';
 
-const cryptPassword = async (password) => {
+const cryptPassword = async (password: string) => {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
 };
 
-export const signUp = async (req, res) => {
+export const signUp = async (req: Request, res: Response) => {
   try {
     const email = (req.body.email || '').trim();
     const password = (req.body.password || '').trim();
     const name = (req.body.name || '').trim();
 
     if (!email || !password || !name) {
-      return res.status(400).send({ message: 'INVALID_REQUEST' });
+      res.status(400).send({ message: 'INVALID_REQUEST' });
+      return;
     }
 
     const encryptedPassword = await cryptPassword(password);
     const createdOn = formatDateTimeToMysql();
     const sessionId = nanoid();
     await connection.execute(
-      'insert into user (email, password, name, created_on, web_session_id, web_session_expires_on, last_log_in) values (?, ?, ?, ?, ?, ?, ?)',
+      'insert into user (email, password, name, created_on, session_id, session_expires_on, last_log_in) values (?, ?, ?, ?, ?, ?, ?)',
       [
         req.body.email,
         encryptedPassword,
@@ -35,20 +37,20 @@ export const signUp = async (req, res) => {
     );
 
     res.send({ sessionId });
-  } catch (e) {
-    console.error(e);
+  } catch (e: any) {
     res.status(400).send(e.message);
   }
 };
 
-export const logIn = async (req, res) => {
+export const logIn = async (req: Request, res: Response) => {
   try {
     const email = (req.body.email || '').trim();
     const password = (req.body.password || '').trim();
     const message = { message: 'INVALID_EMAIL_OR_PASSWORD' };
 
     if (!email || !password) {
-      return res.status(400).send(message);
+      res.status(400).send(message);
+      return;
     }
 
     const rows = await connection.execute(
@@ -57,85 +59,89 @@ export const logIn = async (req, res) => {
     );
 
     if (!rows.length) {
-      return res.status(400).send(message);
+      res.status(400).send(message);
+      return;
     }
 
     const encryptedPassword = await bcrypt.compare(password, rows[0].password);
     if (!encryptedPassword) {
-      return res.status(400).send(message);
+      res.status(400).send(message);
+      return;
     }
 
     const sessionId = nanoid();
     await connection.query(
       `update user 
-       set web_session_id = '${sessionId}', web_session_expires_on = '${setSessionExpirationDate()}', last_log_in = '${formatDateTimeToMysql()}'
+       set session_id = '${sessionId}', session_expires_on = '${setSessionExpirationDate()}', last_log_in = '${formatDateTimeToMysql()}'
        where email = '${email}'`,
     );
 
     res.send({ sessionId });
-  } catch (e) {
+  } catch (e: any) {
     res.status(400).send(e.message);
   }
 };
 
-export const logOut = async (req, res) => {
+export const logOut = async (req: Request, res: Response) => {
   const sessionId = req.headers.authorization;
 
   if (sessionId) {
     await connection.query(
       `update user
-       set web_session_expires_on = '${formatDateTimeToMysql()}'
-       where web_session_id = '${sessionId}'`,
+       set session_expires_on = '${formatDateTimeToMysql()}'
+       where session_id = '${sessionId}'`,
     );
   }
 
   res.send({ message: 'OK' });
 };
 
-export const forgotPassword = async (req, res) => {
+export const forgotPassword = async (req: Request, res: Response) => {
   res.send({ message: 'OK' });
 };
 
-export const changePassword = async (req, res) => {
+export const changePassword = async (req: Request, res: Response) => {
   const sessionId = req.headers.authorization;
   const password = (req.body.password || '').trim();
 
   if (!sessionId || !password) {
-    return res.status(400).send({ message: 'INVALID_REQUEST' });
+    res.status(400).send({ message: 'INVALID_REQUEST' });
+    return;
   }
 
   const encryptedPassword = await cryptPassword(password);
 
   await connection.execute(
-    'update user set password = ? where web_session_id = ?',
+    'update user set password = ? where session_id = ?',
     [encryptedPassword, sessionId],
   );
 
   res.send({ message: 'OK' });
 };
 
-export const getUserBySession = async (req, res) => {
+export const getUserBySession = async (req: Request, res: Response) => {
   const { sessionId } = req.body;
 
   if (!sessionId) {
-    return res.status(400).send('INVALID_REQUEST');
+    res.status(400).send('INVALID_REQUEST');
+    return;
   }
 
   const rows = await connection.execute(
-    `select name, email from user where web_session_id = ? and web_session_expires_on > ?`,
+    `select name, email from user where session_id = ? and session_expires_on > ?`,
     [sessionId, formatDateTimeToMysql()],
   );
 
   if (!rows.length) {
-    return res.status(401);
+    res.status(401);
+    return;
   }
 
   await connection.query(
     `update user
-       set web_session_expires_on = '${setSessionExpirationDate()}'
-       where web_session_id = '${sessionId}'`,
+       set session_expires_on = '${setSessionExpirationDate()}'
+       where session_id = '${sessionId}'`,
   );
 
-  console.log(rows[0]);
   res.send(rows[0]);
 };

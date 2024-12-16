@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon src/index.js"
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src"
   },
   "license": "ISC",
   "packageManager": "yarn@4.5.0",
@@ -24,8 +25,12 @@
     "sharp": "^0.33.5"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.2",
     "dotenv": "^16.4.5",
-    "nodemon": "^3.1.7"
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
   },
   "prettier": {
     "singleQuote": true
