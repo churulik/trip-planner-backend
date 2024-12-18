@@ -1,8 +1,11 @@
 import bcrypt from 'bcrypt';
 import { nanoid } from 'nanoid';
 import { Request, Response } from 'express';
-import { formatDateTimeToMysql, setSessionExpirationDate } from './utils.js';
-import connection from './db-connection.js';
+import {
+  formatDateTimeForMariaDB,
+  setSessionExpirationDate,
+} from '../utils.js';
+import connection from '../db-connection.js';
 
 const cryptPassword = async (password: string) => {
   const salt = await bcrypt.genSalt(10);
@@ -21,7 +24,7 @@ export const signUp = async (req: Request, res: Response) => {
     }
 
     const encryptedPassword = await cryptPassword(password);
-    const createdOn = formatDateTimeToMysql();
+    const createdOn = formatDateTimeForMariaDB();
     const sessionId = nanoid();
     await connection.execute(
       'insert into user (email, password, name, created_on, session_id, session_expires_on, last_log_in) values (?, ?, ?, ?, ?, ?, ?)',
@@ -72,7 +75,7 @@ export const logIn = async (req: Request, res: Response) => {
     const sessionId = nanoid();
     await connection.query(
       `update user 
-       set session_id = '${sessionId}', session_expires_on = '${setSessionExpirationDate()}', last_log_in = '${formatDateTimeToMysql()}'
+       set session_id = '${sessionId}', session_expires_on = '${setSessionExpirationDate()}', last_log_in = '${formatDateTimeForMariaDB()}'
        where email = '${email}'`,
     );
 
@@ -88,7 +91,7 @@ export const logOut = async (req: Request, res: Response) => {
   if (sessionId) {
     await connection.query(
       `update user
-       set session_expires_on = '${formatDateTimeToMysql()}'
+       set session_expires_on = '${formatDateTimeForMariaDB()}'
        where session_id = '${sessionId}'`,
     );
   }
@@ -120,22 +123,7 @@ export const changePassword = async (req: Request, res: Response) => {
 };
 
 export const getUserBySession = async (req: Request, res: Response) => {
-  const { sessionId } = req.body;
-
-  if (!sessionId) {
-    res.status(400).send('INVALID_REQUEST');
-    return;
-  }
-
-  const rows = await connection.execute(
-    `select name, email from user where session_id = ? and session_expires_on > ?`,
-    [sessionId, formatDateTimeToMysql()],
-  );
-
-  if (!rows.length) {
-    res.status(401);
-    return;
-  }
+  const sessionId = req.headers.authorization;
 
   await connection.query(
     `update user
@@ -143,5 +131,5 @@ export const getUserBySession = async (req: Request, res: Response) => {
        where session_id = '${sessionId}'`,
   );
 
-  res.send(rows[0]);
+  res.send(req.user);
 };

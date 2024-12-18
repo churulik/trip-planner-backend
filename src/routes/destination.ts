@@ -1,9 +1,9 @@
 import axios from 'axios';
 import sharp from 'sharp';
 import { Request, Response } from 'express';
-import connection from './db-connection.js';
-import cache from './cache.js';
-import { PIXABAY_API_KEY } from './constants.js';
+import connection from '../db-connection.js';
+import cache from '../cache.js';
+import { PIXABAY_API_KEY } from '../constants.js';
 
 export const getDestinations = async (_: Request, res: Response) => {
   if (cache.has('DESTINATIONS')) {
@@ -50,7 +50,8 @@ export const getDestinationImage = async (req: Request, res: Response) => {
   try {
     const q = city[0].en.split(', ').join('+');
     const { data } = await axios(
-      `https://pixabay.com/api?key=${PIXABAY_API_KEY}&q=${q}&horizontal=horizontal&category=travel&editors_choice=false&safesearch=true&per_page=50&image_type=photo`,
+      //&editors_choice=true
+      `https://pixabay.com/api?key=${PIXABAY_API_KEY}&q=${q}&horizontal=horizontal&category=places&editors_choice=false&safesearch=true&per_page=50&image_type=photo`,
     );
 
     if (data.hits.length) {

@@ -1,4 +1,4 @@
-import connection from './db-connection.js';
+import connection from '../db-connection.js';
 import { Request, Response } from 'express';
 
 const getFirstAcceptLanguage = (acceptLanguage: string) => {

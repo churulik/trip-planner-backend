@@ -9,3 +9,6 @@ export const DB_NAME = process.env.DB_NAME;
 export const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 export const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY;
 export const PIXABAY_API_KEY = process.env.PIXABAY_API_KEY;
+
+export const USER_JOURNEY_CRYPTO_SECRET_KEY = process.env
+  .USER_JOURNEY_CRYPTO_SECRET_KEY as string;

@@ -1,6 +1,5 @@
 {
-  "destination": "Italy",
-  "duration": "5 days",
+  "title": "3-Day Italian Adventure",
   "itinerary": [
     {
       "day": 1,
@@ -196,7 +195,7 @@
       ]
     }
   ],
-  "travel_tips": [
+  "tips": [
     "Wear comfortable walking shoes for exploring the cities.",
     "Be prepared for the tourist crowds, especially in Rome and Venice.",
     "Learn a few basic Italian phrases to help with directions and ordering food.",

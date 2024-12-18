@@ -1,0 +1,129 @@
+{
+  "title": "3-Day Varna Adventure",
+  "itinerary": [
+    {
+      "day": 1,
+      "title": "Exploring the City Center",
+      "activities": [
+        {
+          "time": "Morning",
+          "activities": [
+            {
+              "activity": "Visit the Sea Garden",
+              "description": "Take a relaxing walk in Varna's largest park, enjoying the beautiful seaside views and sculptures."
+            },
+            {
+              "activity": "Visit the Varna Archaeological Museum",
+              "description": "Explore Bulgaria’s oldest and largest archaeological museum with artifacts dating back to ancient times."
+            }
+          ]
+        },
+        {
+          "time": "Afternoon",
+          "activities": [
+            {
+              "activity": "Lunch at a local restaurant",
+              "description": "Try Bulgarian cuisine with dishes like 'shopska salad' and 'kavarma'."
+            },
+            {
+              "activity": "Explore Varna Cathedral",
+              "description": "Visit this beautiful Eastern Orthodox cathedral, known for its stunning architecture and religious art."
+            }
+          ]
+        },
+        {
+          "time": "Evening",
+          "activities": [
+            {
+              "activity": "Dinner and stroll around the city center",
+              "description": "Enjoy a dinner at a seaside restaurant and take a walk along the beach promenade."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "title": "Beach Day and Shopping",
+      "activities": [
+        {
+          "time": "Morning",
+          "activities": [
+            {
+              "activity": "Visit Golden Sands Beach",
+              "description": "Relax on the golden sands and swim in the Black Sea."
+            }
+          ]
+        },
+        {
+          "time": "Afternoon",
+          "activities": [
+            {
+              "activity": "Lunch at a beachside cafe",
+              "description": "Enjoy a light lunch with fresh seafood and salads."
+            },
+            {
+              "activity": "Shopping in Varna's city center",
+              "description": "Explore local shops and boutiques for souvenirs and gifts."
+            }
+          ]
+        },
+        {
+          "time": "Evening",
+          "activities": [
+            {
+              "activity": "Dinner at a traditional Bulgarian restaurant",
+              "description": "Experience Bulgarian folklore and music while dining on traditional dishes."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "title": "Day Trip to Balchik",
+      "activities": [
+        {
+          "time": "Morning",
+          "activities": [
+            {
+              "activity": "Visit the Balchik Palace and Botanical Garden",
+              "description": "Explore the beautiful grounds of the former residence of Romanian Queen Marie and enjoy the lush gardens."
+            }
+          ]
+        },
+        {
+          "time": "Afternoon",
+          "activities": [
+            {
+              "activity": "Lunch at a local Balchik restaurant",
+              "description": "Sample local Bulgarian dishes and enjoy the relaxed seaside atmosphere."
+            }
+          ]
+        },
+        {
+          "time": "Evening",
+          "activities": [
+            {
+              "activity": "Return to Varna",
+              "description": "Enjoy a leisurely drive back to Varna and have a quiet dinner at a seaside restaurant."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "tips": [
+    "Pack light beachwear and comfortable walking shoes.",
+    "Try to learn a few basic Bulgarian phrases for easier communication.",
+    "Carry sunscreen and a hat for protection from the sun."
+  ],
+  "locations": [
+    "Sea Garden",
+    "Varna Archaeological Museum",
+    "Golden Sands Beach",
+    "Varna Cathedral",
+    "Balchik Palace",
+    "Botanical Garden"
+  ]
+}

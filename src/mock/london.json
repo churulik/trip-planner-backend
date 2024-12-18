@@ -1,0 +1,158 @@
+{
+  "title": "3-Day London Itinerary",
+  "itinerary": [
+    {
+      "title": "Day 1: Exploring Central London",
+      "activities": [
+        {
+          "time": "Morning",
+          "activities": [
+            {
+              "activity": "Visit Buckingham Palace",
+              "description": "Explore the iconic Buckingham Palace and watch the Changing of the Guard."
+            },
+            {
+              "activity": "St. James's Park",
+              "description": "Stroll through the park and enjoy the serene atmosphere and beautiful views of the city."
+            }
+          ]
+        },
+        {
+          "time": "Afternoon",
+          "activities": [
+            {
+              "activity": "Visit the Houses of Parliament and Big Ben",
+              "description": "Explore the historic area of Westminster and admire the architecture."
+            },
+            {
+              "activity": "Lunch at a local pub",
+              "description": "Enjoy traditional British cuisine at a nearby pub."
+            }
+          ]
+        },
+        {
+          "time": "Evening",
+          "activities": [
+            {
+              "activity": "Walk along the South Bank",
+              "description": "Take a leisurely walk along the Thames, stopping by the London Eye and the Tate Modern."
+            },
+            {
+              "activity": "Dinner in Covent Garden",
+              "description": "Explore the vibrant market and dine at one of the many restaurants."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Day 2: Museums and Parks",
+      "activities": [
+        {
+          "time": "Morning",
+          "activities": [
+            {
+              "activity": "Visit the British Museum",
+              "description": "Explore ancient artifacts and exhibits from around the world."
+            },
+            {
+              "activity": "Morning Coffee at a nearby café",
+              "description": "Relax with a cup of coffee and enjoy the museum's surroundings."
+            }
+          ]
+        },
+        {
+          "time": "Afternoon",
+          "activities": [
+            {
+              "activity": "Picnic in Hyde Park",
+              "description": "Enjoy a leisurely afternoon in London's largest park with scenic views."
+            },
+            {
+              "activity": "Visit Kensington Gardens",
+              "description": "Wander through the beautiful gardens and visit Kensington Palace."
+            }
+          ]
+        },
+        {
+          "time": "Evening",
+          "activities": [
+            {
+              "activity": "Dinner in Soho",
+              "description": "Experience the lively nightlife with a diverse range of dining options."
+            },
+            {
+              "activity": "Catch a West End show",
+              "description": "End the day with a popular West End musical or play."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Day 3: Markets and Shopping",
+      "activities": [
+        {
+          "time": "Morning",
+          "activities": [
+            {
+              "activity": "Visit Borough Market",
+              "description": "Browse through fresh produce, gourmet foods, and unique gifts."
+            },
+            {
+              "activity": "Breakfast at a nearby café",
+              "description": "Enjoy a leisurely breakfast at one of the charming cafés near the market."
+            }
+          ]
+        },
+        {
+          "time": "Afternoon",
+          "activities": [
+            {
+              "activity": "Shopping on Oxford Street",
+              "description": "Spend the afternoon shopping at London's famous shopping street."
+            },
+            {
+              "activity": "Lunch at a local restaurant",
+              "description": "Take a break for lunch at a nearby restaurant."
+            }
+          ]
+        },
+        {
+          "time": "Evening",
+          "activities": [
+            {
+              "activity": "Visit Camden Market",
+              "description": "Explore the quirky and vibrant market filled with eclectic shops and street food."
+            },
+            {
+              "activity": "Dinner in Shoreditch",
+              "description": "Experience a trendy evening with a choice of diverse restaurants and bars."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "tips": [
+    "Wear comfortable walking shoes as you'll be doing a lot of walking.",
+    "Purchase an Oyster card for easy access to public transportation.",
+    "Make restaurant reservations ahead of time for popular places.",
+    "Check the weather forecast and pack accordingly."
+  ],
+  "locations": [
+    "Buckingham Palace",
+    "St. James's Park",
+    "Westminster",
+    "South Bank",
+    "British Museum",
+    "Hyde Park",
+    "Kensington Gardens",
+    "Soho",
+    "West End",
+    "Borough Market",
+    "Oxford Street",
+    "Camden Market",
+    "Shoreditch"
+  ]
+}

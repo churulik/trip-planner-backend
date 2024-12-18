@@ -1,8 +1,8 @@
-export const formatDateTimeToMysql = (date = new Date()) =>
+export const formatDateTimeForMariaDB = (date = new Date()) =>
   date.toISOString().slice(0, 19).replace('T', ' ');
 
 export const setSessionExpirationDate = () => {
   const date = new Date();
   date.setDate(date.getDate() + 3);
-  return formatDateTimeToMysql(date);
+  return formatDateTimeForMariaDB(date);
 };
