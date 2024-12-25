@@ -75,9 +75,7 @@ export const logIn = async (req: Request, res: Response) => {
     const sessionId = nanoid();
     const expirationDate = setSessionExpirationDate();
     await connection.query(
-      `update login_session 
-       set id = '${sessionId}', expires_on = '${formatDateTimeForMariaDB(expirationDate)}', last_log_in = '${formatDateTimeForMariaDB()}'
-       where user_id = '${user.id}'`,
+      `insert into login_session (id, expires_on, last_log_in, user_id) values ('${sessionId}', '${formatDateTimeForMariaDB(expirationDate)}', '${formatDateTimeForMariaDB()}', '${user.id}')`,
     );
 
     res.send({ sessionId, expirationDate: expirationDate.toUTCString() });
@@ -91,9 +89,7 @@ export const logOut = async (req: Request, res: Response) => {
 
   if (sessionId) {
     await connection.query(
-      `update login_session
-       set expires_on = '${formatDateTimeForMariaDB()}'
-       where id = '${sessionId}'`,
+      `delete from login_session where id = '${sessionId}'`,
     );
   }
 
