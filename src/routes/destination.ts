@@ -51,9 +51,10 @@ export const getDestinationImage = async (req: Request, res: Response) => {
     const q = city[0].en.split(', ').join('+');
     const { data } = await axios(
       //&editors_choice=true
-      `https://pixabay.com/api?key=${PIXABAY_API_KEY}&q=${q}&horizontal=horizontal&category=places&editors_choice=false&safesearch=true&per_page=50&image_type=photo`,
+      `https://pixabay.com/api?key=${PIXABAY_API_KEY}&q=${q}&horizontal=horizontal&category=places&editors_choice=false&safesearch=true&per_page=50&image_type=photo&editors_choice=true`,
     );
 
+    console.log(data);
     if (data.hits.length) {
       const i = Math.floor(Math.random() * data.hits.length);
       const imageResponse = await axios.get(data.hits[i].largeImageURL, {

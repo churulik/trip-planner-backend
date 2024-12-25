@@ -25,21 +25,19 @@ export const signUp = async (req: Request, res: Response) => {
 
     const encryptedPassword = await cryptPassword(password);
     const createdOn = formatDateTimeForMariaDB();
+    const expirationDate = setSessionExpirationDate();
+
+    const result = await connection.execute(
+      'insert into user (email, password, name, created_on) values (?, ?, ?, ?)',
+      [req.body.email, encryptedPassword, name, createdOn],
+    );
     const sessionId = nanoid();
-    await connection.execute(
-      'insert into user (email, password, name, created_on, session_id, session_expires_on, last_log_in) values (?, ?, ?, ?, ?, ?, ?)',
-      [
-        req.body.email,
-        encryptedPassword,
-        name,
-        createdOn,
-        sessionId,
-        setSessionExpirationDate(),
-        createdOn,
-      ],
+    await connection.query(
+      `insert into login_session (id, expires_on, last_log_in, user_id) values ('${sessionId}', '${formatDateTimeForMariaDB(expirationDate)}', '${createdOn}', '${result.insertId}')`,
     );
 
-    res.send({ sessionId });
+    console.log(result);
+    res.send({ sessionId, expirationDate: expirationDate.toUTCString() });
   } catch (e: any) {
     res.status(400).send(e.message);
   }
@@ -56,7 +54,7 @@ export const logIn = async (req: Request, res: Response) => {
       return;
     }
 
-    const rows = await connection.execute(
+    const rows = await connection.execute<{ id: number; password: string }[]>(
       'select * from user where email = ?',
       [email],
     );
@@ -66,20 +64,23 @@ export const logIn = async (req: Request, res: Response) => {
       return;
     }
 
-    const encryptedPassword = await bcrypt.compare(password, rows[0].password);
+    const user = rows[0];
+
+    const encryptedPassword = await bcrypt.compare(password, user.password);
     if (!encryptedPassword) {
       res.status(400).send(message);
       return;
     }
 
     const sessionId = nanoid();
+    const expirationDate = setSessionExpirationDate();
     await connection.query(
-      `update user 
-       set session_id = '${sessionId}', session_expires_on = '${setSessionExpirationDate()}', last_log_in = '${formatDateTimeForMariaDB()}'
-       where email = '${email}'`,
+      `update login_session 
+       set id = '${sessionId}', expires_on = '${formatDateTimeForMariaDB(expirationDate)}', last_log_in = '${formatDateTimeForMariaDB()}'
+       where user_id = '${user.id}'`,
     );
 
-    res.send({ sessionId });
+    res.send({ sessionId, expirationDate: expirationDate.toUTCString() });
   } catch (e: any) {
     res.status(400).send(e.message);
   }
@@ -90,9 +91,9 @@ export const logOut = async (req: Request, res: Response) => {
 
   if (sessionId) {
     await connection.query(
-      `update user
-       set session_expires_on = '${formatDateTimeForMariaDB()}'
-       where session_id = '${sessionId}'`,
+      `update login_session
+       set expires_on = '${formatDateTimeForMariaDB()}'
+       where id = '${sessionId}'`,
     );
   }
 
@@ -115,7 +116,7 @@ export const changePassword = async (req: Request, res: Response) => {
   const encryptedPassword = await cryptPassword(password);
 
   await connection.execute(
-    'update user set password = ? where session_id = ?',
+    'update user u join login_session ls on (u.id = ls.user_id) set password = ? where ls.id = ?',
     [encryptedPassword, sessionId],
   );
 
@@ -124,12 +125,18 @@ export const changePassword = async (req: Request, res: Response) => {
 
 export const getUserBySession = async (req: Request, res: Response) => {
   const sessionId = req.headers.authorization;
-
+  const sessionExpirationDate = setSessionExpirationDate();
   await connection.query(
-    `update user
-       set session_expires_on = '${setSessionExpirationDate()}'
-       where session_id = '${sessionId}'`,
+    `update login_session
+       set expires_on = '${formatDateTimeForMariaDB(sessionExpirationDate)}'
+       where id = '${sessionId}'`,
   );
 
-  res.send(req.user);
+  res.send({
+    ...req.user,
+    session: {
+      id: sessionId,
+      expirationDate: sessionExpirationDate.toUTCString(),
+    },
+  });
 };

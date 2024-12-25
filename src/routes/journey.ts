@@ -4,7 +4,7 @@ import {
   USER_JOURNEY_CRYPTO_SECRET_KEY,
 } from '../constants.js';
 import { Request, Response } from 'express';
-import trip from '../mock/london.json';
+import trip from '../mock/florence.json';
 import crypto from 'crypto';
 import connection from '../db-connection.js';
 import { nanoid } from 'nanoid';
@@ -12,15 +12,63 @@ import { formatDateTimeForMariaDB } from '../utils.js';
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
+const MAP_MARKER_LETTER = [
+  'A',
+  'B',
+  'C',
+  'D',
+  'E',
+  'F',
+  'G',
+  'H',
+  'I',
+  'J',
+  'K',
+  'L',
+  'M',
+  'N',
+  'O',
+  'P',
+  'Q',
+  'R',
+  'S',
+  'T',
+  'U',
+  'V',
+  'W',
+  'X',
+  'Y',
+  'Z',
+];
+
 export const getJourney = async (req: Request, res: Response) => {
   try {
-    // const completion = await openai.chat.completions.create({
-    //   messages: [{ role: 'system', content: 'You are a helpful assistant.' }],
-    //   model: 'gpt-4o-mini',
-    // });
-    // res.send(completion.choices[0].message);
+    const itinerary = trip.itinerary.map((itinerary) => {
+      const dayAddresses: string[] = [];
+      let activityNumber = 0;
 
-    res.send(trip);
+      const dayActivities = itinerary.dayActivities.map((dayActivity) => {
+        const timeActivities = dayActivity.timeActivities.map(
+          (timeActivity) => {
+            dayAddresses.push(
+              `${timeActivity.place.name}, ${timeActivity.place.address}`,
+            );
+            return {
+              activity: timeActivity.activity,
+              description: timeActivity.description,
+              address: `${timeActivity.place.name}, ${timeActivity.place.address}`,
+              markerLetter: MAP_MARKER_LETTER[activityNumber++],
+            };
+          },
+        );
+
+        return { ...dayActivity, timeActivities };
+      });
+
+      return { ...itinerary, dayActivities, dayAddresses };
+    });
+
+    res.send({ ...trip, itinerary });
   } catch (e: any) {
     console.error(e.message);
     res.status(400).send({ message: '' });

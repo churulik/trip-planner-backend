@@ -141,18 +141,19 @@
     "Check the weather forecast and pack accordingly."
   ],
   "locations": [
-    "Buckingham Palace",
-    "St. James's Park",
-    "Westminster",
-    "South Bank",
-    "British Museum",
-    "Hyde Park",
-    "Kensington Gardens",
-    "Soho",
-    "West End",
-    "Borough Market",
-    "Oxford Street",
-    "Camden Market",
-    "Shoreditch"
+    { "name": "Buckingham Palace", "lat": 51.501364, "lng": -0.14189 },
+    { "name": "St. James's Park", "lat": 51.502883, "lng": -0.133786 },
+    { "name": "Houses of Parliament and Big Ben", "lat": 51.499479, "lng": -0.124809 },
+    { "name": "South Bank", "lat": 51.507622, "lng": -0.115989 },
+    { "name": "Covent Garden", "lat": 51.511492, "lng": -0.123257 },
+    { "name": "British Museum", "lat": 51.519413, "lng": -0.126957 },
+    { "name": "Hyde Park", "lat": 51.507268, "lng": -0.16573 },
+    { "name": "Kensington Gardens", "lat": 51.505927, "lng": -0.188532 },
+    { "name": "Soho", "lat": 51.514389, "lng": -0.135817 },
+    { "name": "West End", "lat": 51.512852, "lng": -0.129101 },
+    { "name": "Borough Market", "lat": 51.50544, "lng": -0.091063 },
+    { "name": "Oxford Street", "lat": 51.5145, "lng": -0.14615 },
+    { "name": "Camden Market", "lat": 51.541306, "lng": -0.143142 },
+    { "name": "Shoreditch", "lat": 51.526469, "lng": -0.082083 }
   ]
 }

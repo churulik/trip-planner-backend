@@ -4,5 +4,5 @@ export const formatDateTimeForMariaDB = (date = new Date()) =>
 export const setSessionExpirationDate = () => {
   const date = new Date();
   date.setDate(date.getDate() + 3);
-  return formatDateTimeForMariaDB(date);
+  return date;
 };

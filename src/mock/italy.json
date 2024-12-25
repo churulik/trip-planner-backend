@@ -1,20 +1,19 @@
 {
-  "title": "3-Day Italian Adventure",
+  "title": "2-Day Trip to Italy",
   "itinerary": [
     {
-      "day": 1,
-      "title": "Rome - The Eternal City",
+      "title": "Day 1: Exploring Rome",
       "activities": [
         {
           "time": "Morning",
           "activities": [
             {
-              "activity": "Colosseum Tour",
-              "description": "Explore the iconic Colosseum and learn about its history."
+              "activity": "Visit the Colosseum",
+              "description": "Explore the ancient Colosseum and learn about its history."
             },
             {
               "activity": "Roman Forum",
-              "description": "Walk through the ancient ruins of the Roman Forum."
+              "description": "Walk through the historic ruins of the Roman Forum."
             }
           ]
         },
@@ -22,12 +21,12 @@
           "time": "Afternoon",
           "activities": [
             {
-              "activity": "Pantheon",
-              "description": "Visit the Pantheon and admire its architectural beauty."
+              "activity": "Trevi Fountain",
+              "description": "Throw a coin into the Trevi Fountain and make a wish."
             },
             {
-              "activity": "Trevi Fountain",
-              "description": "Throw a coin in the Trevi Fountain for good luck."
+              "activity": "Piazza Navona",
+              "description": "Visit the lively Piazza Navona and enjoy street performances."
             }
           ]
         },
@@ -35,64 +34,53 @@
           "time": "Evening",
           "activities": [
             {
-              "activity": "Dinner at a traditional Italian restaurant",
-              "description": "Enjoy an authentic Italian dinner featuring local pasta dishes and wines."
+              "activity": "Dinner in Trastevere",
+              "description": "Enjoy an authentic Italian dinner in the charming Trastevere district."
             }
           ]
+        }
+      ],
+      "locations": [
+        {
+          "name": "Colosseum, Rome, Italy",
+          "lat": 41.8902,
+          "lng": 12.4922
+        },
+        {
+          "name": "Roman Forum, Rome, Italy",
+          "lat": 41.8921,
+          "lng": 12.4833
+        },
+        {
+          "name": "Trevi Fountain, Rome, Italy",
+          "lat": 41.9000,
+          "lng": 12.4835
+        },
+        {
+          "name": "Piazza Navona, Rome, Italy",
+          "lat": 41.8947,
+          "lng": 12.4718
+        },
+        {
+          "name": "Trastevere, Rome, Italy",
+          "lat": 41.8785,
+          "lng": 12.4759
         }
       ]
     },
     {
-      "day": 2,
-      "title": "Florence - The Art Capital",
+      "title": "Day 2: Exploring Florence",
       "activities": [
         {
           "time": "Morning",
           "activities": [
             {
-              "activity": "Uffizi Gallery",
-              "description": "Visit the Uffizi Gallery to see masterpieces by Botticelli, Michelangelo, and Leonardo da Vinci."
-            }
-          ]
-        },
-        {
-          "time": "Afternoon",
-          "activities": [
-            {
-              "activity": "Ponte Vecchio",
-              "description": "Stroll along the Ponte Vecchio and explore the shops and jewelry stores."
+              "activity": "Visit the Florence Cathedral",
+              "description": "Admire the stunning architecture of the Florence Cathedral and climb to the top for a panoramic view of the city."
             },
             {
               "activity": "Piazza della Signoria",
-              "description": "Visit the outdoor museum with replicas of famous sculptures."
-            }
-          ]
-        },
-        {
-          "time": "Evening",
-          "activities": [
-            {
-              "activity": "Dinner at a local trattoria",
-              "description": "Savor Florentine specialties like bistecca alla fiorentina."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "day": 3,
-      "title": "Venice - The City of Canals",
-      "activities": [
-        {
-          "time": "Morning",
-          "activities": [
-            {
-              "activity": "Gondola Ride",
-              "description": "Take a traditional gondola ride through the canals of Venice."
-            },
-            {
-              "activity": "St. Mark's Basilica",
-              "description": "Visit the stunning St. Mark's Basilica."
+              "description": "Explore the art and sculptures in Piazza della Signoria."
             }
           ]
         },
@@ -100,12 +88,12 @@
           "time": "Afternoon",
           "activities": [
             {
-              "activity": "Doge's Palace",
-              "description": "Explore the opulent Doge's Palace and learn about Venetian history."
+              "activity": "Uffizi Gallery",
+              "description": "Visit the Uffizi Gallery and view masterpieces from the Renaissance period."
             },
             {
-              "activity": "Rialto Market",
-              "description": "Wander through the Rialto Market and try local Venetian snacks."
+              "activity": "Ponte Vecchio",
+              "description": "Stroll across the famous Ponte Vecchio bridge."
             }
           ]
         },
@@ -113,93 +101,45 @@
           "time": "Evening",
           "activities": [
             {
-              "activity": "Dinner by the canals",
-              "description": "Enjoy a romantic dinner at a waterfront restaurant."
+              "activity": "Dinner in Oltrarno",
+              "description": "Have a traditional Tuscan dinner in the Oltrarno district."
             }
           ]
         }
-      ]
-    },
-    {
-      "day": 4,
-      "title": "Pisa and Tuscany",
-      "activities": [
+      ],
+      "locations": [
         {
-          "time": "Morning",
-          "activities": [
-            {
-              "activity": "Leaning Tower of Pisa",
-              "description": "Visit the Leaning Tower of Pisa and take memorable photos."
-            }
-          ]
+          "name": "Florence Cathedral, Florence, Italy",
+          "lat": 43.7736,
+          "lng": 11.2558
         },
         {
-          "time": "Afternoon",
-          "activities": [
-            {
-              "activity": "Tuscan Countryside",
-              "description": "Drive through the scenic Tuscan countryside and visit charming towns."
-            },
-            {
-              "activity": "Wine Tasting",
-              "description": "Enjoy wine tasting in a Tuscan vineyard."
-            }
-          ]
+          "name": "Piazza della Signoria, Florence, Italy",
+          "lat": 43.7739,
+          "lng": 11.2554
         },
         {
-          "time": "Evening",
-          "activities": [
-            {
-              "activity": "Tuscan Dinner",
-              "description": "Indulge in a traditional Tuscan dinner at a countryside restaurant."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "day": 5,
-      "title": "Return to Rome",
-      "activities": [
-        {
-          "time": "Morning",
-          "activities": [
-            {
-              "activity": "Vatican City",
-              "description": "Visit Vatican City and explore the Vatican Museums and Sistine Chapel."
-            }
-          ]
+          "name": "Uffizi Gallery, Florence, Italy",
+          "lat": 43.7685,
+          "lng": 11.2556
         },
         {
-          "time": "Afternoon",
-          "activities": [
-            {
-              "activity": "St. Peter's Basilica",
-              "description": "Climb to the top of St. Peter's Basilica for a panoramic view of Rome."
-            },
-            {
-              "activity": "Final Shopping",
-              "description": "Do some final souvenir shopping at Via del Corso."
-            }
-          ]
+          "name": "Ponte Vecchio, Florence, Italy",
+          "lat": 43.7712,
+          "lng": 11.2568
         },
         {
-          "time": "Evening",
-          "activities": [
-            {
-              "activity": "Farewell Dinner",
-              "description": "Enjoy a farewell dinner at a rooftop restaurant with a view of the city."
-            }
-          ]
+          "name": "Oltrarno, Florence, Italy",
+          "lat": 43.7697,
+          "lng": 11.2464
         }
       ]
     }
   ],
   "tips": [
-    "Wear comfortable walking shoes for exploring the cities.",
-    "Be prepared for the tourist crowds, especially in Rome and Venice.",
-    "Learn a few basic Italian phrases to help with directions and ordering food.",
-    "Make reservations for major attractions like the Colosseum and Uffizi Gallery to avoid long waits.",
-    "Carry a map or use a navigation app to help find your way around the cities."
+    "Make sure to wear comfortable shoes for all the walking.",
+    "Carry a water bottle to stay hydrated, especially during the warmer months.",
+    "Book tickets in advance for popular attractions like the Colosseum and Uffizi Gallery to avoid long lines.",
+    "Learn a few basic Italian phrases to enhance your experience and interact with locals."
   ]
 }
