@@ -1,5 +1,5 @@
 type User = {
-  id: string;
+  id: number;
   name: string;
   email: string;
 };
@@ -42,4 +42,17 @@ type JourneyResponse = {
     },
   ];
   tips: string[];
+};
+
+type UserCreditPlanDB = {
+  plan_id: string;
+  plan_name: string;
+  credit: number;
+  valid_day: number;
+  price: number;
+  detail_id: string;
+  detail_name: string;
+  detail_icon: string;
+  detail_category_id: number;
+  detail_category_name: string;
 };

@@ -6,3 +6,9 @@ export const setSessionExpirationDate = () => {
   date.setDate(date.getDate() + 3);
   return date;
 };
+
+export const setPlanExpirationDate = (validDay: number) => {
+  const date = new Date();
+  date.setDate(date.getDate() + validDay);
+  return date;
+};
