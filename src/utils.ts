@@ -12,3 +12,9 @@ export const setPlanExpirationDate = (validDay: number) => {
   date.setDate(date.getDate() + validDay);
   return date;
 };
+
+export const setJourneyAvailableTillDate = () => {
+  const date = new Date();
+  date.setDate(date.getDate() + 7);
+  return date;
+};

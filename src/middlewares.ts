@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import connection from './db-connection.js';
 import { formatDateTimeForMariaDB } from './utils.js';
+import { User } from './definitions';
 
 export const authMiddleware = async (
   req: Request,

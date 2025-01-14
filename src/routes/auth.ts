@@ -7,69 +7,26 @@ import {
   setSessionExpirationDate,
 } from '../utils.js';
 import connection from '../db-connection.js';
+import { CreditPlanDB, User } from '../definitions';
 
 const cryptPassword = async (password: string) => {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
 };
 
-const parseCreditPlanRows = (creditPlanRows: UserCreditPlanDB[]) => {
+const parseCreditPlanRows = (creditPlanRows: CreditPlanDB[]) => {
   const plans: { name: string; credit: number; expiresOn: string }[] = [];
-  const journeyDetails: {
-    duration: number;
-    exactDays: boolean;
-    options: [];
-  } = { duration: 0, exactDays: false, options: [] };
   if (creditPlanRows.length > 0) {
     const freePlan = creditPlanRows[0];
     const planExpirationDate = setPlanExpirationDate(freePlan.valid_day);
     plans.push({
-      name: freePlan.plan_name,
+      name: freePlan.name,
       credit: freePlan.credit,
       expiresOn: planExpirationDate.toISOString(),
     });
-
-    creditPlanRows.forEach((plan) => {
-      if (plan.detail_category_id === 1) {
-        if (plan.detail_name.startsWith('DURATION_')) {
-          journeyDetails.duration = +plan.detail_name.split('_')[1];
-        }
-
-        if (plan.detail_name === 'EXACT_DATE') {
-          journeyDetails.exactDays = true;
-        }
-      }
-    });
   }
 
-  return {
-    plans,
-    journeyDetails,
-  };
-};
-
-const getUserPlans = async (userId: number) => {
-  const creditPlanRows = await connection.query<UserCreditPlanDB[]>(`
-    select 
-        cp.id as plan_id,
-        cp.name as plan_name,
-        cp.credit as credit,
-        cp.valid_day as valid_day,
-        cp.price as price,
-        jd.id as detail_id,
-        jd.name as detail_name,
-        jd.icon as detail_icon,
-        jc.id as detail_category_id,
-        jc.name as detail_category_name
-    from user_credit_plan ucp 
-        join credit_plan cp on ucp.credit_plan_id = cp.id
-        join credit_plan_journey_detail cpjd on cpjd.credit_plan_id = cp.id
-        join journey_detail jd on jd.id = cpjd.journey_detail_id
-        join journey_category jc on jc.id = jd.category_id
-        where ucp.user_id = ${userId} and ucp.expires_on >= '${formatDateTimeForMariaDB()}'
-      `);
-
-  return parseCreditPlanRows(creditPlanRows);
+  return plans;
 };
 
 export const signUp = async (req: Request, res: Response) => {
@@ -97,39 +54,24 @@ export const signUp = async (req: Request, res: Response) => {
       `insert into login_session (id, expires_on, last_log_in, user_id) values ('${sessionId}', '${formatDateTimeForMariaDB(expirationDate)}', '${createdOn}', '${insertId}')`,
     );
 
-    const creditPlanRows = await connection.query<UserCreditPlanDB[]>(`
-        select cp.id as plan_id,
-         cp.name as plan_name,
-         cp.credit as credit,
-         cp.valid_day as valid_day,
-         cp.price as price,
-         jd.id as detail_id,
-         jd.name as detail_name,
-         jd.icon as detail_icon,
-         jc.id as detail_category_id,
-         jc.name as detail_category_name
-      from credit_plan cp
-          join credit_plan_journey_detail cpjd on cpjd.credit_plan_id = cp.id
-          join journey_detail jd on jd.id = cpjd.journey_detail_id
-          join journey_category jc on jc.id = jd.category_id
-          where cp.price = 0
-      `);
+    const creditPlanRows = await connection.query<CreditPlanDB[]>(
+      'select * from credit_plan where price = 0',
+    );
 
     if (creditPlanRows.length > 0) {
       const freePlan = creditPlanRows[0];
       const planExpirationDate = setPlanExpirationDate(freePlan.valid_day);
       await connection.query(
-        `insert into user_credit_plan (user_id, credit_plan_id, created_on, expires_on, credit_left) values ('${insertId}', '${freePlan.plan_id}', '${createdOn}', '${formatDateTimeForMariaDB(planExpirationDate)}', '${freePlan.credit}')`,
+        `insert into user_credit_plan (user_id, credit_plan_id, created_on, expires_on, credit_left) values ('${insertId}', '${freePlan.id}', '${createdOn}', '${formatDateTimeForMariaDB(planExpirationDate)}', '${freePlan.credit}')`,
       );
     }
 
-    const { plans, journeyDetails } = parseCreditPlanRows(creditPlanRows);
+    const plans = parseCreditPlanRows(creditPlanRows);
 
     res.send({
       sessionId,
       expirationDate: expirationDate.toUTCString(),
       plans,
-      journeyDetails,
     });
   } catch (e: any) {
     console.error(e);
@@ -223,7 +165,14 @@ export const getUserBySession = async (req: Request, res: Response) => {
   );
 
   const user = req.user as User;
-  const { plans, journeyDetails } = await getUserPlans(user.id);
+  const creditPlanRows = await connection.query<CreditPlanDB[]>(`
+    select cp.*
+    from user_credit_plan ucp 
+        join credit_plan cp on ucp.credit_plan_id = cp.id
+        where ucp.user_id = ${user.id} and ucp.credit_left > 0 and ucp.expires_on >= '${formatDateTimeForMariaDB()}'
+      `);
+
+  const plans = parseCreditPlanRows(creditPlanRows);
 
   res.send({
     name: user.name,
@@ -233,6 +182,5 @@ export const getUserBySession = async (req: Request, res: Response) => {
       expirationDate: sessionExpirationDate.toUTCString(),
     },
     plans,
-    journeyDetails,
   });
 };

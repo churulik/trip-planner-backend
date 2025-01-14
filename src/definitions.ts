@@ -1,10 +1,10 @@
-type User = {
+export type User = {
   id: number;
   name: string;
   email: string;
 };
 
-type Journey = {
+export type Journey = {
   id: string;
   journey: string;
   created_on: string;
@@ -12,12 +12,9 @@ type Journey = {
   auth_tag: string;
 };
 
-type JourneyResponse = {
+export type AiJourneyResponse = {
   tripTitle: string;
-  city: {
-    lat: number;
-    lng: number;
-  };
+  city: { lat: number; lng: number };
   itinerary: [
     {
       dayTitle: string;
@@ -30,10 +27,9 @@ type JourneyResponse = {
               description: string;
               place: {
                 name: string;
-                // postalCode: number;
-                // lat: number;
-                // lng: number;
                 address: string;
+                city: string;
+                country: string;
               };
             },
           ];
@@ -44,7 +40,15 @@ type JourneyResponse = {
   tips: string[];
 };
 
-type UserCreditPlanDB = {
+export type CreditPlanDB = {
+  id: string;
+  name: string;
+  credit: number;
+  valid_day: number;
+  price: number;
+};
+
+export type UserCreditPlanDB = {
   plan_id: string;
   plan_name: string;
   credit: number;

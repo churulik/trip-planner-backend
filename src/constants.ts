@@ -12,3 +12,6 @@ export const PIXABAY_API_KEY = process.env.PIXABAY_API_KEY as string;
 
 export const USER_JOURNEY_CRYPTO_SECRET_KEY = process.env
   .USER_JOURNEY_CRYPTO_SECRET_KEY as string;
+
+export const GOOGLE_PLACES_API_KEY = process.env
+  .GOOGLE_PLACES_API_KEY as string;

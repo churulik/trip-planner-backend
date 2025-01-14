@@ -1,7 +1,8 @@
 import formData from 'form-data';
-import Mailgun from 'mailgun.js';
 import { MAILGUN_API_KEY } from './constants.js';
+import Mailgun from 'mailgun.js';
 
+// @ts-ignore
 const mailgun = new Mailgun(formData);
 const mg = mailgun.client({
   username: 'api',
@@ -16,5 +17,5 @@ mg.messages
     text: 'Testing some Mailgun awesomeness!',
     html: '<h1>Testing some Mailgun awesomeness!</h1>',
   })
-  .then((msg) => console.log(msg)) // logs response data
-  .catch((err) => console.log(err)); // logs any error
+  .then((msg: any) => console.log(msg)) // logs response data
+  .catch((err: any) => console.log(err)); // logs any error

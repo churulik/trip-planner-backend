@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc && mkdir -p dist/assets/images/ && cp src/assets/images/*.svg dist/assets/images/",
     "start": "node dist/index.js",
     "dev": "tsx watch src"
   },
@@ -35,5 +35,6 @@
   },
   "prettier": {
     "singleQuote": true
-  }
+  },
+  "exports": "./dist/index.js"
 }
