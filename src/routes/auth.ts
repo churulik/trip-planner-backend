@@ -7,15 +7,27 @@ import {
   setSessionExpirationDate,
 } from '../utils.js';
 import connection from '../db-connection.js';
-import { CreditPlanDB, User } from '../definitions';
+import { CreditPlanDB, Journey, User } from '../definitions';
+import { USER_JOURNEY_CRYPTO_SECRET_KEY } from '../constants';
+import crypto from 'crypto';
+
+type Plan = { name: string; credit: number; expiresOn: string };
+type UserJourney = { id: string; journey: Journey; createdOn: string };
 
 const cryptPassword = async (password: string) => {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
 };
 
-const parseCreditPlanRows = (creditPlanRows: CreditPlanDB[]) => {
-  const plans: { name: string; credit: number; expiresOn: string }[] = [];
+const getUserCreditPlans = async (userId: number) => {
+  const creditPlanRows = await connection.query<CreditPlanDB[]>(`
+    select cp.*
+    from user_credit_plan ucp 
+        join credit_plan cp on ucp.credit_plan_id = cp.id
+        where ucp.user_id = ${userId} and ucp.credit_left > 0 and ucp.expires_on >= '${formatDateTimeForMariaDB()}'
+      `);
+
+  const plans: Plan[] = [];
   if (creditPlanRows.length > 0) {
     const freePlan = creditPlanRows[0];
     const planExpirationDate = setPlanExpirationDate(freePlan.valid_day);
@@ -27,6 +39,68 @@ const parseCreditPlanRows = (creditPlanRows: CreditPlanDB[]) => {
   }
 
   return plans;
+};
+
+const getUserJourneys = async (userId: number) => {
+  const dbUserJourneys = await connection.query<Journey[]>(
+    `select * from journey where user_id = ${userId}`,
+  );
+
+  const key = Buffer.from(USER_JOURNEY_CRYPTO_SECRET_KEY, 'base64');
+  return dbUserJourneys.map(({ id, journey, iv, auth_tag, created_on }) => {
+    const decipher = crypto.createDecipheriv(
+      'aes-256-gcm',
+      key,
+      Buffer.from(iv, 'base64'),
+    );
+
+    const authTag = Buffer.from(auth_tag, 'base64');
+    decipher.setAuthTag(authTag);
+
+    let decryptedJourney = decipher.update(journey, 'base64', 'utf8');
+    decryptedJourney += decipher.final('utf8');
+
+    return {
+      id,
+      journey: JSON.parse(decryptedJourney),
+      createdOn: created_on,
+    } as UserJourney;
+  });
+};
+
+const buildUserResponse = (
+  userName: string,
+  userEmail: string,
+  sessionId: string,
+  sessionExpirationDate: Date,
+  plans: Plan[],
+  journeys?: UserJourney[],
+) => ({
+  name: userName,
+  email: userEmail,
+  session: {
+    id: sessionId,
+    expirationDate: sessionExpirationDate.toUTCString(),
+  },
+  plans,
+  journeys,
+});
+
+export const letsGo = async (req: Request, res: Response) => {
+  const email = (req.body.email || '').trim();
+  const message = { message: 'INVALID_REQUEST' };
+  if (!email) {
+    res.status(400).send(message);
+    return;
+  }
+
+  const [row] = await connection.execute<{ count: number }[]>(
+    'select count(*) as count from user where email = ?',
+    [email],
+  );
+
+  console.log(row);
+  res.send({ isRegistered: row.count > 0 });
 };
 
 export const signUp = async (req: Request, res: Response) => {
@@ -66,13 +140,9 @@ export const signUp = async (req: Request, res: Response) => {
       );
     }
 
-    const plans = parseCreditPlanRows(creditPlanRows);
+    const plans = await getUserCreditPlans(insertId);
 
-    res.send({
-      sessionId,
-      expirationDate: expirationDate.toUTCString(),
-      plans,
-    });
+    res.send(buildUserResponse(name, email, sessionId, expirationDate, plans));
   } catch (e: any) {
     console.error(e);
     res.status(400).send(e.message);
@@ -90,10 +160,9 @@ export const logIn = async (req: Request, res: Response) => {
       return;
     }
 
-    const rows = await connection.execute<{ id: number; password: string }[]>(
-      'select * from user where email = ?',
-      [email],
-    );
+    const rows = await connection.execute<
+      { id: number; password: string; name: string; email: string }[]
+    >('select * from user where email = ?', [email]);
 
     if (!rows.length) {
       res.status(400).send(message);
@@ -114,7 +183,10 @@ export const logIn = async (req: Request, res: Response) => {
       `insert into login_session (id, expires_on, last_log_in, user_id) values ('${sessionId}', '${formatDateTimeForMariaDB(expirationDate)}', '${formatDateTimeForMariaDB()}', '${user.id}')`,
     );
 
-    res.send({ sessionId, expirationDate: expirationDate.toUTCString() });
+    const plans = await getUserCreditPlans(user.id);
+    res.send(
+      buildUserResponse(user.name, user.name, sessionId, expirationDate, plans),
+    );
   } catch (e: any) {
     res.status(400).send(e.message);
   }
@@ -156,7 +228,7 @@ export const changePassword = async (req: Request, res: Response) => {
 };
 
 export const getUserBySession = async (req: Request, res: Response) => {
-  const sessionId = req.headers.authorization;
+  const sessionId = req.headers.authorization as string;
   const sessionExpirationDate = setSessionExpirationDate();
   await connection.query(
     `update login_session
@@ -165,22 +237,17 @@ export const getUserBySession = async (req: Request, res: Response) => {
   );
 
   const user = req.user as User;
-  const creditPlanRows = await connection.query<CreditPlanDB[]>(`
-    select cp.*
-    from user_credit_plan ucp 
-        join credit_plan cp on ucp.credit_plan_id = cp.id
-        where ucp.user_id = ${user.id} and ucp.credit_left > 0 and ucp.expires_on >= '${formatDateTimeForMariaDB()}'
-      `);
+  const plans = await getUserCreditPlans(user.id);
+  const journeys = await getUserJourneys(user.id);
 
-  const plans = parseCreditPlanRows(creditPlanRows);
-
-  res.send({
-    name: user.name,
-    email: user.email,
-    session: {
-      id: sessionId,
-      expirationDate: sessionExpirationDate.toUTCString(),
-    },
-    plans,
-  });
+  res.send(
+    buildUserResponse(
+      user.name,
+      user.name,
+      sessionId,
+      sessionExpirationDate,
+      plans,
+      journeys,
+    ),
+  );
 };

@@ -5,11 +5,12 @@ import { PIXABAY_API_KEY } from '../constants.js';
 import { nanoid } from 'nanoid';
 import { fileURLToPath } from 'url';
 import path from 'path';
+import { formatDateTimeForMariaDB } from '../utils';
 
 export const getDestinationImageUrls = async (req: Request, res: Response) => {
   const { id } = req.params;
   const city = await connection.execute(
-    `select * from destination1 where id = '${id}' limit 1`,
+    `select * from destination where id = '${id}' limit 1`,
   );
 
   if (!city.length) {
@@ -99,4 +100,11 @@ export const getDestinationIcon = async (req: Request, res: Response) => {
       res.sendFile(imagePath);
     }
   });
+};
+
+export const insertVisitor = async (req: Request, res: Response) => {
+  await connection.query(
+    `insert into visitor (ip, created_on) values ('${req.ip}', '${formatDateTimeForMariaDB()}')`,
+  );
+  res.send();
 };

@@ -1,4 +1,4 @@
-export {};
+import { User } from '../definitions';
 
 declare global {
   namespace Express {

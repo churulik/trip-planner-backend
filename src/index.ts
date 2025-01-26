@@ -3,6 +3,7 @@ import {
   changePassword,
   forgotPassword,
   getUserBySession,
+  letsGo,
   logIn,
   logOut,
   signUp,
@@ -19,6 +20,7 @@ import {
   getDestinationImageUrls,
   insertDest,
   getDestinationIcon,
+  insertVisitor,
 } from './routes/destination.js';
 import { authMiddleware } from './middlewares.js';
 import {
@@ -26,42 +28,50 @@ import {
   getDestinations,
   getJourneyImage,
 } from './routes/api';
-import { getCreditPlans } from './routes/credit-plans';
+import { getCreditPlans, buyCredit } from './routes/credit-plans';
 
 const app = express();
 const port = 3100;
 
+app.set('trust proxy', true);
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*'); // Allow all origins
   next();
 });
 app.use(json());
 
-app.post('/sign-up', signUp);
-app.post('/log-in', logIn);
-app.post('/log-out', logOut);
-app.post('/forgot-password', forgotPassword);
-app.post('/change-password', changePassword);
-app.get('/user', authMiddleware, getUserBySession);
+app.get('/server', (req, res) => {
+  console.log('server', req.ip);
+  res.send(req.ip);
+});
+app.post('/server/lets-go', letsGo);
+app.post('/server/sign-up', signUp);
+app.post('/server/log-in', logIn);
+app.post('/server/log-out', logOut);
+app.post('/server/forgot-password', forgotPassword);
+app.post('/server/change-password', changePassword);
+app.get('/server/user', authMiddleware, getUserBySession);
 
-app.get('/translations', getTranslation);
-app.get('/languages', getLanguages);
+app.get('/server/translations', getTranslation);
+app.get('/server/languages', getLanguages);
 
-app.post('/journey', authMiddleware, generateJourney);
-app.get('/user-journey', authMiddleware, getJourneys);
-app.post('/user-journey', authMiddleware, saveJourney);
-app.delete('/user-journey/:id', authMiddleware, deleteJourney);
-app.get('/journey-details', journeyDetail);
+app.post('/server/journey', authMiddleware, generateJourney);
+app.get('/server/user-journey', authMiddleware, getJourneys);
+app.post('/server/user-journey', authMiddleware, saveJourney);
+app.delete('/server/user-journey/:id', authMiddleware, deleteJourney);
+app.get('/server/journey-details', journeyDetail);
 
-app.get('/image/destination/url/:id', getDestinationImageUrls);
-app.get('/image/destination/:url', getDestinationImage);
-app.post('/ins-dest', insertDest);
+app.get('/server/image/destination/url/:id', getDestinationImageUrls);
+app.get('/server/image/destination/:url', getDestinationImage);
+app.post('/server/ins-dest', insertDest);
 
-app.get('/api/destinations', getDestinations);
-app.get('/api/image/journey/:name', getJourneyImage);
-app.get('/api/icon/destination/:name', getDestinationIcon);
+app.get('/server/credit-plans', getCreditPlans);
+app.post('/server/buy-credit', authMiddleware, buyCredit);
 
-app.get('/credit-plans', getCreditPlans);
+app.get('/client/destinations', getDestinations);
+app.get('/client/image/journey/:name', getJourneyImage);
+app.get('/client/icon/destination/:name', getDestinationIcon);
+app.get('/client/visitor', insertVisitor);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

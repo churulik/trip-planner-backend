@@ -5,7 +5,7 @@ import {
   USER_JOURNEY_CRYPTO_SECRET_KEY,
 } from '../constants.js';
 import { Request, Response } from 'express';
-import trip from '../mock/varna.json';
+import trip from '../mock/la.json';
 import crypto from 'crypto';
 import connection from '../db-connection.js';
 import { nanoid } from 'nanoid';
@@ -13,7 +13,7 @@ import {
   formatDateTimeForMariaDB,
   setJourneyAvailableTillDate,
 } from '../utils.js';
-import { AiJourneyResponse, Journey } from '../definitions';
+import { AiJourneyResponse, Journey, JourneyResponse } from '../definitions';
 import axios from 'axios';
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
@@ -47,7 +47,7 @@ const MAP_MARKER_LETTER = [
   'Z',
 ];
 
-const insertJourney = async (userId: number, journey: object) => {
+const insertJourney = async (userId: number, journey: JourneyResponse) => {
   const key = Buffer.from(USER_JOURNEY_CRYPTO_SECRET_KEY, 'base64');
   const iv = crypto.randomBytes(12);
   const cipher = crypto.createCipheriv(CRYPTO_ALGORITHM, key, iv);
@@ -61,18 +61,22 @@ const insertJourney = async (userId: number, journey: object) => {
   const authTag = cipher.getAuthTag();
   const authTagBase64 = authTag.toString('base64');
 
+  const createdOn = formatDateTimeForMariaDB();
+  const id = nanoid();
   await connection.execute(
     'insert into journey (id, user_id, journey, created_on, iv, auth_tag, saved_till) values(?, ?, ?, ? ,?, ?, ?)',
     [
-      nanoid(),
+      id,
       userId,
       encryptedJourney,
-      formatDateTimeForMariaDB(),
+      createdOn,
       ivBase64,
       authTagBase64,
       formatDateTimeForMariaDB(setJourneyAvailableTillDate()),
     ],
   );
+
+  return { id, createdOn, journey };
 };
 
 const addPlacesAddress = async (journey: AiJourneyResponse) => {
@@ -203,7 +207,19 @@ export const generateJourney = async (req: Request, res: Response) => {
   }
 
   try {
-    const places = await addPlacesAddress(trip as AiJourneyResponse);
+    await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      store: false,
+      messages: [{ role: 'user', content: 'write a haiku about ai' }],
+    });
+  } catch (error: any) {
+    await connection.query(
+      `insert into ai_error_log (req, res, user_id, created_on) values('${destination.en}', '${error.message}', ${req.user!.id}, '${formatDateTimeForMariaDB()}')`,
+    );
+  }
+
+  try {
+    const places = await addPlacesAddress(trip as any);
 
     const itinerary = trip.itinerary.map((itinerary) => {
       const dayPlaces: {
@@ -268,9 +284,17 @@ export const generateJourney = async (req: Request, res: Response) => {
       };
     });
 
-    const output = { ...trip, itinerary };
+    const journeyToDb = {
+      ...trip,
+      city: {
+        lat: trip.city.lat,
+        lng: trip.city.lng,
+        flag: trip.city.iso2.toLowerCase(),
+      },
+      itinerary,
+    };
 
-    // await insertJourney(req.user.id, output);
+    const output = await insertJourney(req.user!.id, journeyToDb);
 
     await connection.query(
       `update destination set query_count = destination.query_count + 1 where id = '${cityId}'`,

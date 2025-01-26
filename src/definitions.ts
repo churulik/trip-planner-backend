@@ -40,6 +40,37 @@ export type AiJourneyResponse = {
   tips: string[];
 };
 
+type DayPlace = {
+  id: string;
+  name: string;
+  markerLabel: string;
+  location: { lat: number; lng: number };
+};
+
+export type JourneyResponse = {
+  tripTitle: string;
+  city: {
+    lat: number;
+    lng: number;
+    flag: string;
+  };
+  itinerary: {
+    dayTitle: string;
+    dayActivities: {
+      time: string;
+      timeActivities: {
+        activity: string;
+        description: string;
+        address: string;
+        markerLetter: string;
+      }[];
+    }[];
+    dayPlaces: DayPlace[];
+    googleMapsLink: string;
+  }[];
+  tips: string[];
+};
+
 export type CreditPlanDB = {
   id: string;
   name: string;

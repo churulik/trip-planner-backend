@@ -5,15 +5,6 @@ import path from 'path';
 import axios from 'axios';
 
 export const getDestinations = async (req: Request, res: Response) => {
-  const [etag] = await connection.query<{ value: string }[]>(
-    "select value from etag where `key` = 'destination'",
-  );
-
-  if (req.headers['if-none-match'] === etag.value) {
-    res.status(304).end(); // Resource not modified
-    return;
-  }
-
   const destinations = await connection.query<
     { id: number; en: string; country_code: string; population: number }[]
   >(`select * from destination order by substring(en, 1, 1), population desc`);
@@ -37,8 +28,7 @@ export const getDestinations = async (req: Request, res: Response) => {
     citiesObj[firstLetter].push(cityObj);
   });
 
-  res.set('ETag', etag.value);
-  res.set('Cache-Control', 'public, max-age=0');
+  res.set('Cache-Control', 'public, max-age=5');
   res.send(citiesObj);
 };
 
@@ -63,9 +53,16 @@ export const getJourneyImage = async (req: Request, res: Response) => {
   const { name } = req.params;
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-  const imagePath = path.join(__dirname, '../assets/images', name); // Adjust the path as needed
+  const imagePath = path.join(
+    __dirname,
+    '../assets/icons/journey-details',
+    name,
+  );
+
+  res.set('Cache-Control', 'public, max-age=5');
   res.sendFile(imagePath, (err) => {
     if (err) {
+      console.error(err);
       res.status(500).send('Error sending the image');
     }
   });
