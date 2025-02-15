@@ -69,14 +69,14 @@ const getUserJourneys = async (userId: number) => {
 };
 
 const buildUserResponse = (
-  userName: string,
+  userInitials: string,
   userEmail: string,
   sessionId: string,
   sessionExpirationDate: Date,
   plans: Plan[],
-  journeys?: UserJourney[],
+  journeys: UserJourney[] = [],
 ) => ({
-  name: userName,
+  initials: userInitials,
   email: userEmail,
   session: {
     id: sessionId,
@@ -86,11 +86,11 @@ const buildUserResponse = (
   journeys,
 });
 
-export const letsGo = async (req: Request, res: Response) => {
+export const checkRegistered = async (req: Request, res: Response) => {
   const email = (req.body.email || '').trim();
-  const message = { message: 'INVALID_REQUEST' };
+
   if (!email) {
-    res.status(400).send(message);
+    res.status(400).send({ message: 'INVALID_REQUEST' });
     return;
   }
 
@@ -99,7 +99,6 @@ export const letsGo = async (req: Request, res: Response) => {
     [email],
   );
 
-  console.log(row);
   res.send({ isRegistered: row.count > 0 });
 };
 
@@ -107,9 +106,9 @@ export const signUp = async (req: Request, res: Response) => {
   try {
     const email = (req.body.email || '').trim();
     const password = (req.body.password || '').trim();
-    const name = (req.body.name || '').trim();
+    const initials = (req.body.initials || '').trim();
 
-    if (!email || !password || !name) {
+    if (!email || !password || !initials || initials.length > 2) {
       res.status(400).send({ message: 'INVALID_REQUEST' });
       return;
     }
@@ -119,8 +118,8 @@ export const signUp = async (req: Request, res: Response) => {
     const expirationDate = setSessionExpirationDate();
 
     const { insertId } = await connection.execute(
-      'insert into user (email, password, name, created_on) values (?, ?, ?, ?)',
-      [req.body.email, encryptedPassword, name, createdOn],
+      'insert into user (email, password, initials, created_on) values (?, ?, ?, ?)',
+      [req.body.email, encryptedPassword, initials, createdOn],
     );
 
     const sessionId = nanoid();
@@ -142,7 +141,9 @@ export const signUp = async (req: Request, res: Response) => {
 
     const plans = await getUserCreditPlans(insertId);
 
-    res.send(buildUserResponse(name, email, sessionId, expirationDate, plans));
+    res.send(
+      buildUserResponse(initials, email, sessionId, expirationDate, plans),
+    );
   } catch (e: any) {
     console.error(e);
     res.status(400).send(e.message);
@@ -161,7 +162,7 @@ export const logIn = async (req: Request, res: Response) => {
     }
 
     const rows = await connection.execute<
-      { id: number; password: string; name: string; email: string }[]
+      { id: number; password: string; initials: string; email: string }[]
     >('select * from user where email = ?', [email]);
 
     if (!rows.length) {
@@ -184,8 +185,17 @@ export const logIn = async (req: Request, res: Response) => {
     );
 
     const plans = await getUserCreditPlans(user.id);
+    const journeys = await getUserJourneys(user.id);
+
     res.send(
-      buildUserResponse(user.name, user.name, sessionId, expirationDate, plans),
+      buildUserResponse(
+        user.initials,
+        user.email,
+        sessionId,
+        expirationDate,
+        plans,
+        journeys,
+      ),
     );
   } catch (e: any) {
     res.status(400).send(e.message);
@@ -242,8 +252,8 @@ export const getUserBySession = async (req: Request, res: Response) => {
 
   res.send(
     buildUserResponse(
-      user.name,
-      user.name,
+      user.initials,
+      user.email,
       sessionId,
       sessionExpirationDate,
       plans,

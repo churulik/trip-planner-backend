@@ -1,9 +1,9 @@
 import express, { json } from 'express';
 import {
   changePassword,
+  checkRegistered,
   forgotPassword,
   getUserBySession,
-  letsGo,
   logIn,
   logOut,
   signUp,
@@ -17,9 +17,9 @@ import {
   saveJourney,
 } from './routes/journey.js';
 import {
+  getDestinationIcon,
   getDestinationImageUrls,
   insertDest,
-  getDestinationIcon,
   insertVisitor,
 } from './routes/destination.js';
 import { authMiddleware } from './middlewares.js';
@@ -28,7 +28,7 @@ import {
   getDestinations,
   getJourneyImage,
 } from './routes/api';
-import { getCreditPlans, buyCredit } from './routes/credit-plans';
+import { buyCredit, getCreditPlans } from './routes/credit-plans';
 
 const app = express();
 const port = 3100;
@@ -44,7 +44,7 @@ app.get('/server', (req, res) => {
   console.log('server', req.ip);
   res.send(req.ip);
 });
-app.post('/server/lets-go', letsGo);
+app.post('/server/check-registered', checkRegistered);
 app.post('/server/sign-up', signUp);
 app.post('/server/log-in', logIn);
 app.post('/server/log-out', logOut);
