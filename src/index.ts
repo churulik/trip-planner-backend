@@ -1,12 +1,12 @@
 import express, { json } from 'express';
 import {
-  changePassword,
   checkRegistered,
   forgotPassword,
   getUserBySession,
   logIn,
   logOut,
   signUp,
+  updateUser,
 } from './routes/auth.js';
 import { getLanguages, getTranslation } from './routes/translation.js';
 import {
@@ -49,8 +49,8 @@ app.post('/server/sign-up', signUp);
 app.post('/server/log-in', logIn);
 app.post('/server/log-out', logOut);
 app.post('/server/forgot-password', forgotPassword);
-app.post('/server/change-password', changePassword);
 app.get('/server/user', authMiddleware, getUserBySession);
+app.patch('/server/user', authMiddleware, updateUser);
 
 app.get('/server/translations', getTranslation);
 app.get('/server/languages', getLanguages);

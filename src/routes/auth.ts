@@ -261,3 +261,25 @@ export const getUserBySession = async (req: Request, res: Response) => {
     ),
   );
 };
+
+export const updateUser = async (req: Request, res: Response) => {
+  const user = req.user!;
+  const password = (req.body.password || '').trim();
+  const initials = (req.body.initials || '').trim();
+
+  if ((password && password.length > 32) || !initials || initials.length > 2) {
+    res.status(400).send({ message: 'INVALID_REQUEST' });
+    return;
+  }
+  let userPassword = user.password;
+  if (password) {
+    userPassword = await cryptPassword(password);
+  }
+
+  await connection.execute(
+    'update user set initials = ?, password = ? where id = ?',
+    [initials, userPassword, user.id],
+  );
+
+  res.send({ message: 'UPDATED' });
+};

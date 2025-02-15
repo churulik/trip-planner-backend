@@ -2,6 +2,7 @@ export type User = {
   id: number;
   initials: string;
   email: string;
+  password: string;
 };
 
 export type Journey = {
