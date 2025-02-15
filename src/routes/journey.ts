@@ -375,7 +375,7 @@ export const deleteJourney = async (req: Request, res: Response) => {
     return;
   }
 
-  res.send({ message: 'DELETED' });
+  res.send({ message: 'DELETED', id });
 };
 
 export const journeyDetail = async (req: Request, res: Response) => {
