@@ -4,9 +4,9 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import axios from 'axios';
 
-export const getDestinations = async (req: Request, res: Response) => {
+export const getDestinations = async (_: Request, res: Response) => {
   const destinations = await connection.query<
-    { id: number; en: string; country_code: string; population: number }[]
+    { id: number; en: string; iso2: string; population: number }[]
   >(`select * from destination order by substring(en, 1, 1), population desc`);
 
   const citiesObj: { [key: string]: {}[] } = {};
@@ -23,7 +23,7 @@ export const getDestinations = async (req: Request, res: Response) => {
       city: split[0],
       state: split.length === 3 ? split[1] : undefined,
       country: split.length === 3 ? split[2] : split[1],
-      countryCode: destination.country_code.toLowerCase(),
+      countryCode: destination.iso2.toLowerCase(),
     };
     citiesObj[firstLetter].push(cityObj);
   });

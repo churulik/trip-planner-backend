@@ -16,7 +16,7 @@ export const authMiddleware = async (
   }
 
   const rows = await connection.execute<User[]>(
-    `select u.id, u.initials, u.email, u.password from user u join login_session ls on u.id = ls.user_id where ls.id = ? and ls.expires_on > ?`,
+    `select u.id, u.initials, u.email from user u join login_session ls on u.id = ls.user_id where ls.id = ? and ls.expires_on > ?`,
     [sessionId, formatDateTimeForMariaDB()],
   );
 

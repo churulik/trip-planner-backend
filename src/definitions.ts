@@ -2,7 +2,6 @@ export type User = {
   id: number;
   initials: string;
   email: string;
-  password: string;
 };
 
 export type Journey = {
@@ -11,6 +10,7 @@ export type Journey = {
   created_on: string;
   iv: string;
   auth_tag: string;
+  saved_till: string;
 };
 
 export type AiJourneyResponse = {
@@ -38,7 +38,7 @@ export type AiJourneyResponse = {
       ];
     },
   ];
-  tips: string[];
+  tips?: string[];
 };
 
 type DayPlace = {
@@ -46,30 +46,6 @@ type DayPlace = {
   name: string;
   markerLabel: string;
   location: { lat: number; lng: number };
-};
-
-export type JourneyResponse = {
-  tripTitle: string;
-  city: {
-    lat: number;
-    lng: number;
-    flag: string;
-  };
-  itinerary: {
-    dayTitle: string;
-    dayActivities: {
-      time: string;
-      timeActivities: {
-        activity: string;
-        description: string;
-        address: string;
-        markerLetter: string;
-      }[];
-    }[];
-    dayPlaces: DayPlace[];
-    googleMapsLink: string;
-  }[];
-  tips: string[];
 };
 
 export type CreditPlanDB = {
@@ -91,4 +67,41 @@ export type UserCreditPlanDB = {
   detail_icon: string;
   detail_category_id: number;
   detail_category_name: string;
+};
+
+export type OpenAiJourneyResponse = {
+  tripTitle: string;
+  itinerary: {
+    dayTitle: string;
+    dayActivities: {
+      time: 'Morning' | 'Afternoon' | 'Evening';
+      timeActivities: {
+        activity: string;
+        description: string;
+        place: string;
+        city: string;
+        country: string;
+      }[];
+    }[];
+  }[];
+  tips: string[];
+};
+
+export type GenerateJourneyResponse = {
+  tripTitle: string;
+  itinerary: {
+    dayTitle: string;
+    dayActivities: {
+      time: string;
+      timeActivities: {
+        activity: string;
+        description: string;
+        address: string;
+        markerLabel: string;
+      }[];
+    }[];
+    dayPlaces: DayPlace[];
+    googleMapsLink: string;
+  }[];
+  tips?: string[];
 };

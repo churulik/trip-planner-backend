@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 export const DB_HOST = process.env.DB_HOST as string;
@@ -15,3 +16,5 @@ export const USER_JOURNEY_CRYPTO_SECRET_KEY = process.env
 
 export const GOOGLE_PLACES_API_KEY = process.env
   .GOOGLE_PLACES_API_KEY as string;
+
+export const CRYPTO_ALGORITHM = 'aes-256-gcm';

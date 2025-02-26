@@ -43,29 +43,32 @@ const getUserCreditPlans = async (userId: number) => {
 
 const getUserJourneys = async (userId: number) => {
   const dbUserJourneys = await connection.query<Journey[]>(
-    `select * from journey where user_id = ${userId}`,
+    `select * from journey where user_id = ${userId} order by created_on desc`,
   );
 
   const key = Buffer.from(USER_JOURNEY_CRYPTO_SECRET_KEY, 'base64');
-  return dbUserJourneys.map(({ id, journey, iv, auth_tag, created_on }) => {
-    const decipher = crypto.createDecipheriv(
-      'aes-256-gcm',
-      key,
-      Buffer.from(iv, 'base64'),
-    );
+  return dbUserJourneys.map(
+    ({ id, journey, iv, auth_tag, created_on, saved_till }) => {
+      const decipher = crypto.createDecipheriv(
+        'aes-256-gcm',
+        key,
+        Buffer.from(iv, 'base64'),
+      );
 
-    const authTag = Buffer.from(auth_tag, 'base64');
-    decipher.setAuthTag(authTag);
+      const authTag = Buffer.from(auth_tag, 'base64');
+      decipher.setAuthTag(authTag);
 
-    let decryptedJourney = decipher.update(journey, 'base64', 'utf8');
-    decryptedJourney += decipher.final('utf8');
+      let decryptedJourney = decipher.update(journey, 'base64', 'utf8');
+      decryptedJourney += decipher.final('utf8');
 
-    return {
-      id,
-      journey: JSON.parse(decryptedJourney),
-      createdOn: created_on,
-    } as UserJourney;
-  });
+      return {
+        id,
+        journey: JSON.parse(decryptedJourney),
+        createdOn: created_on,
+        savedTill: saved_till,
+      } as UserJourney;
+    },
+  );
 };
 
 const buildUserResponse = (
@@ -219,20 +222,19 @@ export const forgotPassword = async (req: Request, res: Response) => {
 };
 
 export const changePassword = async (req: Request, res: Response) => {
-  const sessionId = req.headers.authorization;
   const password = (req.body.password || '').trim();
 
-  if (!sessionId || !password) {
+  if (!password || password.length > 32) {
     res.status(400).send({ message: 'INVALID_REQUEST' });
     return;
   }
 
   const encryptedPassword = await cryptPassword(password);
 
-  await connection.execute(
-    'update user u join login_session ls on (u.id = ls.user_id) set password = ? where ls.id = ?',
-    [encryptedPassword, sessionId],
-  );
+  await connection.execute('update user u set password = ? where id = ?', [
+    encryptedPassword,
+    req.user!.id,
+  ]);
 
   res.send({ message: 'OK' });
 };
@@ -264,22 +266,17 @@ export const getUserBySession = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   const user = req.user!;
-  const password = (req.body.password || '').trim();
   const initials = (req.body.initials || '').trim();
 
-  if ((password && password.length > 32) || !initials || initials.length > 2) {
+  if (!initials || initials.length > 2) {
     res.status(400).send({ message: 'INVALID_REQUEST' });
     return;
   }
-  let userPassword = user.password;
-  if (password) {
-    userPassword = await cryptPassword(password);
-  }
 
-  await connection.execute(
-    'update user set initials = ?, password = ? where id = ?',
-    [initials, userPassword, user.id],
-  );
+  await connection.execute('update user set initials = ? where id = ?', [
+    initials,
+    user.id,
+  ]);
 
   res.send({ message: 'UPDATED' });
 };
