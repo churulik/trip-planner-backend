@@ -19,10 +19,9 @@ const journeyDetails = async (req: Request, res: Response) => {
       icon: string;
       category_id: number;
       category_name: string;
-      is_multi_select: boolean;
     }[]
   >(`
-    select jd.*, jc.name as category_name, jc.is_multi_select
+    select jd.*, jc.name as category_name
         from  journey_detail jd
         join journey_category jc on jc.id = jd.category_id
     where not exists (
@@ -44,7 +43,6 @@ const journeyDetails = async (req: Request, res: Response) => {
         name: string;
         icon: string;
         svg?: string;
-        isMultiSelect: boolean;
       }[];
     }[];
   } = { duration: 0, exactDays: false, options: [] };
@@ -69,7 +67,6 @@ const journeyDetails = async (req: Request, res: Response) => {
               id: detail.id,
               name: detail.name,
               icon: detail.icon,
-              isMultiSelect: detail.is_multi_select,
             },
           ],
         });
@@ -78,7 +75,6 @@ const journeyDetails = async (req: Request, res: Response) => {
           id: detail.id,
           name: detail.name,
           icon: detail.icon,
-          isMultiSelect: detail.is_multi_select,
         });
       }
     }

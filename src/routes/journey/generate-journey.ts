@@ -246,7 +246,6 @@ const generateJourney = async (req: Request, res: Response) => {
     !cityId ||
     !details ||
     !details.duration ||
-    !details.duration.value ||
     (details.optionals && !Array.isArray(details.optionals))
   ) {
     res.status(400).send({ message: 'INVALID_REQUEST' });
@@ -281,9 +280,10 @@ const generateJourney = async (req: Request, res: Response) => {
   let aiGeneratedJourney: OpenAiJourneyResponse | null = null;
 
   try {
+    const startingDate = details.startDate || '';
     const format =
       '{tripTitle:string;itinerary:{dayTitle:string;welcoming:string;dayActivities:{time:‘Morning’|‘Afternoon’|‘Evening’;timeActivities:{activity:string;description:string;place:string;city:string;country:string}[]}[]}[];tips:string[];}';
-    const content = `Generate a ${details.duration.value}-day trip to ${destination.en}. ${detailsForAi} Use the following JSON format strictly: ${format}. Output as plain string, without beautifiers, ensuring all keys and string values are wrapped in double quotes and no trailing commas are present, ready for JSON parsing.`;
+    const content = `Generate a ${details.duration}-day${startingDate ? ` (starting on ${startingDate})` : ''} trip to ${destination.en}. ${detailsForAi} Use the following JSON format strictly: ${format}. Output as plain string, without beautifiers, ensuring all keys and string values are wrapped in double quotes and no trailing commas are present, ready for JSON parsing.`;
     console.log(content);
     const data = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
