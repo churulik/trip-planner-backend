@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 import { Request, Response } from 'express';
 import {
   formatDateTimeForMariaDB,
+  getUserCredits,
   setPlanExpirationDate,
   setSessionExpirationDate,
 } from '../utils.js';
@@ -76,6 +77,7 @@ const buildUserResponse = (
   userEmail: string,
   sessionId: string,
   sessionExpirationDate: Date,
+  credits: number,
   plans: Plan[],
   journeys: UserJourney[] = [],
 ) => ({
@@ -87,6 +89,7 @@ const buildUserResponse = (
   },
   plans,
   journeys,
+  credits,
 });
 
 export const checkRegistered = async (req: Request, res: Response) => {
@@ -145,7 +148,7 @@ export const signUp = async (req: Request, res: Response) => {
     const plans = await getUserCreditPlans(insertId);
 
     res.send(
-      buildUserResponse(initials, email, sessionId, expirationDate, plans),
+      buildUserResponse(initials, email, sessionId, expirationDate, 1, plans),
     );
   } catch (e: any) {
     console.error(e);
@@ -189,6 +192,7 @@ export const logIn = async (req: Request, res: Response) => {
 
     const plans = await getUserCreditPlans(user.id);
     const journeys = await getUserJourneys(user.id);
+    const credits = await getUserCredits(user.id);
 
     res.send(
       buildUserResponse(
@@ -196,6 +200,7 @@ export const logIn = async (req: Request, res: Response) => {
         user.email,
         sessionId,
         expirationDate,
+        credits,
         plans,
         journeys,
       ),
@@ -217,7 +222,7 @@ export const logOut = async (req: Request, res: Response) => {
   res.send({ message: 'OK' });
 };
 
-export const forgotPassword = async (req: Request, res: Response) => {
+export const forgotPassword = async (_: Request, res: Response) => {
   res.send({ message: 'OK' });
 };
 
@@ -251,6 +256,7 @@ export const getUserBySession = async (req: Request, res: Response) => {
   const user = req.user as User;
   const plans = await getUserCreditPlans(user.id);
   const journeys = await getUserJourneys(user.id);
+  const credits = await getUserCredits(req.user!.id);
 
   res.send(
     buildUserResponse(
@@ -258,6 +264,7 @@ export const getUserBySession = async (req: Request, res: Response) => {
       user.email,
       sessionId,
       sessionExpirationDate,
+      credits,
       plans,
       journeys,
     ),

@@ -69,21 +69,23 @@ export type UserCreditPlanDB = {
   detail_category_name: string;
 };
 
-export type OpenAiJourneyResponse = {
-  tripTitle: string;
-  itinerary: {
-    dayTitle: string;
-    dayActivities: {
-      time: 'Morning' | 'Afternoon' | 'Evening';
-      timeActivities: {
-        activity: string;
-        description: string;
-        place: string;
-        city: string;
-        country: string;
-      }[];
+export type Itinerary = {
+  dayTitle: string;
+  dayActivities: {
+    time: 'Morning' | 'Afternoon' | 'Evening';
+    timeActivities: {
+      activity: string;
+      description: string;
+      place: string;
+      city: string;
+      country: string;
     }[];
   }[];
+};
+
+export type OpenAiJourneyResponse = {
+  tripTitle: string;
+  itinerary: Itinerary[];
   tips: string[];
 };
 

@@ -2,10 +2,12 @@ import { Request, Response } from 'express';
 import connection from '../../db-connection';
 import {
   GenerateJourneyResponse,
+  Itinerary,
   OpenAiJourneyResponse,
 } from '../../definitions';
 import {
   formatDateTimeForMariaDB,
+  getUserCredits,
   setJourneyAvailableTillDate,
 } from '../../utils';
 import OpenAI from 'openai';
@@ -18,6 +20,11 @@ import {
 import crypto from 'crypto';
 import { nanoid } from 'nanoid';
 import axios from 'axios';
+import {
+  GENERATE_JOURNEY_ERROR,
+  INVALID_REQUEST,
+  NO_CREDITS,
+} from '../../messages';
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
@@ -129,14 +136,17 @@ const insertJourney = async (
   return { id, createdOn, journey, savedTill };
 };
 
+type PlacesAddress = {
+  [key: string]: {
+    id: string;
+    name: string;
+    location: { lat: number; lng: number };
+  } | null;
+};
+
 const addPlacesAddress = async (journey: OpenAiJourneyResponse) => {
-  const places: {
-    [key: string]: {
-      id: string;
-      name: string;
-      location: { lat: number; lng: number };
-    } | null;
-  } = {};
+  const places: PlacesAddress = {};
+
   journey.itinerary.forEach((itinerary) => {
     itinerary.dayActivities.forEach((dayActivity) => {
       dayActivity.timeActivities.forEach(
@@ -239,16 +249,88 @@ const addPlacesAddress = async (journey: OpenAiJourneyResponse) => {
   return places;
 };
 
+const mapItinerary = (
+  itinerary: Itinerary,
+  placesAddress: PlacesAddress,
+  travelMode: string,
+) => {
+  const dayPlaces: {
+    id: string;
+    name: string;
+    markerLabel: string;
+    location: { lat: number; lng: number };
+  }[] = [];
+  let activityNumber = 0;
+
+  const dayActivities = itinerary.dayActivities.map((dayActivity) => {
+    const timeActivities = dayActivity.timeActivities.map((timeActivity) => {
+      const placeAddress =
+        placesAddress[
+          `${timeActivity.place}, ${timeActivity.city}, ${timeActivity.country}`
+        ];
+
+      const markerLabel = MAP_MARKER_LETTER[activityNumber++];
+
+      if (placeAddress) {
+        dayPlaces.push({
+          id: placeAddress.id,
+          name: placeAddress.name,
+          markerLabel,
+          location: placeAddress.location,
+        });
+      }
+
+      return {
+        activity: timeActivity.activity,
+        description: timeActivity.description,
+        address: timeActivity.place,
+        markerLabel,
+      };
+    });
+
+    return { ...dayActivity, timeActivities };
+  });
+
+  const origin = `origin=${dayPlaces[0].name}`;
+  const originPlaceId = `origin_place_id=${dayPlaces[0].id}`;
+  const destination = `destination=${dayPlaces[dayPlaces.length - 1].name}`;
+  const destinationPlaceId = `destination_place_id=${dayPlaces[dayPlaces.length - 1].id}`;
+  const placesForWaypoints = dayPlaces.filter(
+    (_, i) => i !== 0 && i !== dayPlaces.length - 1,
+  );
+  const waypoints = `waypoints=${placesForWaypoints
+    .map((p) => p.name)
+    .join('|')}`;
+  const waypointsPlaceId = `waypoint_place_ids=${placesForWaypoints
+    .map((p) => p.id)
+    .join('|')}`;
+
+  return {
+    ...itinerary,
+    dayActivities,
+    dayPlaces,
+    googleMapsLink: encodeURI(
+      `https://www.google.com/maps/dir/?api=1&${origin}&${originPlaceId}&${destination}&${destinationPlaceId}&${waypoints}&${waypointsPlaceId}&travelmode=${travelMode}`,
+    ),
+  };
+};
+
 const generateJourney = async (req: Request, res: Response) => {
   const { cityId, details } = req.body;
+  const credits = await getUserCredits(req.user!.id);
+
+  if (!credits) {
+    res.status(400).send(NO_CREDITS);
+    return;
+  }
 
   if (
     !cityId ||
     !details ||
     !details.duration ||
-    (details.optionals && !Array.isArray(details.optionals))
+    (details.types && !Array.isArray(details.types))
   ) {
-    res.status(400).send({ message: 'INVALID_REQUEST' });
+    res.status(400).send(INVALID_REQUEST);
     return;
   }
 
@@ -257,24 +339,31 @@ const generateJourney = async (req: Request, res: Response) => {
   >('select en, query_count, iso2 from destination where id = ?', [cityId]);
 
   if (!destination) {
-    res.status(400).send({ message: 'INVALID_REQUEST' });
+    res.status(400).send(INVALID_REQUEST);
     return;
   }
 
   let detailsForAi = '';
+  let googleMapsTravelMode = 'walking';
 
-  if (details.optionals?.length) {
-    const placeholders = details.optionals.map(() => '?').join(',');
+  if (details.types?.length) {
+    const placeholders = details.types.map(() => '?').join(',');
 
-    const dbDetails = await connection.execute<{ ai_text: string }[]>(
-      `select ai_text from journey_detail where id in (${placeholders}) order by category_id`,
-      details.optionals,
+    const dbDetails = await connection.execute<
+      { category_id: number; name: string; ai_text: string }[]
+    >(
+      `select category_id, name, ai_text from journey_detail where id in (${placeholders}) order by category_id`,
+      details.types,
     );
     detailsForAi = dbDetails.map(({ ai_text }) => ai_text).join(' ');
+    const dbTravelMode = dbDetails.find(({ category_id }) => category_id === 5);
+    if (dbTravelMode) {
+      googleMapsTravelMode = dbTravelMode.name.toLowerCase();
+    }
   }
 
   const returnError = () => {
-    res.status(503).send({ message: 'GENERATE_JOURNEY_ERROR' });
+    res.status(503).send(GENERATE_JOURNEY_ERROR);
   };
 
   let aiGeneratedJourney: OpenAiJourneyResponse | null = null;
@@ -283,7 +372,7 @@ const generateJourney = async (req: Request, res: Response) => {
     const startingDate = details.startDate || '';
     const format =
       '{tripTitle:string;itinerary:{dayTitle:string;welcoming:string;dayActivities:{time:‘Morning’|‘Afternoon’|‘Evening’;timeActivities:{activity:string;description:string;place:string;city:string;country:string}[]}[]}[];tips:string[];}';
-    const content = `Generate a ${details.duration}-day${startingDate ? ` (starting on ${startingDate})` : ''} trip to ${destination.en}. ${detailsForAi} Use the following JSON format strictly: ${format}. Output as plain string, without beautifiers, ensuring all keys and string values are wrapped in double quotes and no trailing commas are present, ready for JSON parsing.`;
+    const content = `Generate a ${details.duration}-day${startingDate ? ` (starting on ${startingDate})` : ''} trip to ${destination.en}. ${detailsForAi} Use the following JSON format: ${format}. Make sure timeActivities is array. Output as plain string, without beautifiers, ensuring all keys and string values are wrapped in double quotes and no trailing commas are present, ready for JSON parsing.`;
     console.log(content);
     const data = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
@@ -348,71 +437,11 @@ const generateJourney = async (req: Request, res: Response) => {
   }
 
   try {
-    const places = await addPlacesAddress(aiGeneratedJourney);
+    const placesAddress = await addPlacesAddress(aiGeneratedJourney);
 
-    const itinerary = aiGeneratedJourney.itinerary.map((itinerary) => {
-      const dayPlaces: {
-        id: string;
-        name: string;
-        markerLabel: string;
-        location: { lat: number; lng: number };
-      }[] = [];
-      let activityNumber = 0;
-
-      const dayActivities = itinerary.dayActivities.map((dayActivity) => {
-        const timeActivities = dayActivity.timeActivities.map(
-          (timeActivity) => {
-            const placeAddress =
-              places[
-                `${timeActivity.place}, ${timeActivity.city}, ${timeActivity.country}`
-              ];
-
-            const markerLabel = MAP_MARKER_LETTER[activityNumber++];
-
-            if (placeAddress) {
-              dayPlaces.push({
-                id: placeAddress.id,
-                name: placeAddress.name,
-                markerLabel,
-                location: placeAddress.location,
-              });
-            }
-
-            return {
-              activity: timeActivity.activity,
-              description: timeActivity.description,
-              address: timeActivity.place,
-              markerLabel,
-            };
-          },
-        );
-
-        return { ...dayActivity, timeActivities };
-      });
-
-      const origin = `origin=${dayPlaces[0].name}`;
-      const originPlaceId = `origin_place_id=${dayPlaces[0].id}`;
-      const destination = `destination=${dayPlaces[dayPlaces.length - 1].name}`;
-      const destinationPlaceId = `destination_place_id=${dayPlaces[dayPlaces.length - 1].id}`;
-      const placesForWaypoints = dayPlaces.filter(
-        (_, i) => i !== 0 && i !== dayPlaces.length - 1,
-      );
-      const waypoints = `waypoints=${placesForWaypoints
-        .map((p) => p.name)
-        .join('|')}`;
-      const waypointsPlaceId = `waypoint_place_ids=${placesForWaypoints
-        .map((p) => p.id)
-        .join('|')}`;
-
-      return {
-        ...itinerary,
-        dayActivities,
-        dayPlaces,
-        googleMapsLink: encodeURI(
-          `https://www.google.com/maps/dir/?api=1&${origin}&${originPlaceId}&${destination}&${destinationPlaceId}&${waypoints}&${waypointsPlaceId}&travelmode=walking`,
-        ),
-      };
-    });
+    const itinerary = aiGeneratedJourney.itinerary.map((itinerary) =>
+      mapItinerary(itinerary, placesAddress, googleMapsTravelMode),
+    );
 
     const journeyToDb = {
       ...aiGeneratedJourney,
@@ -426,7 +455,12 @@ const generateJourney = async (req: Request, res: Response) => {
       `update destination set query_count = destination.query_count + 1 where id = '${cityId}'`,
     );
 
-    res.send(output);
+    const creditsLeft = credits - 1;
+    await connection.query(
+      `update user_credit_plan set credit_left = ${creditsLeft} where id = 1`,
+    );
+
+    res.send({ ...output, credits: creditsLeft });
   } catch (e: any) {
     console.error('GENERAL_ERROR', e.message);
     returnError();
