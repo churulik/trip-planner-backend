@@ -3,6 +3,7 @@ import {
   changePassword,
   checkRegistered,
   forgotPassword,
+  getProfileValidations,
   getUserBySession,
   logIn,
   logOut,
@@ -52,6 +53,7 @@ app.post('/server/change-password', authMiddleware, changePassword);
 app.post('/server/forgot-password', forgotPassword);
 app.get('/server/user', authMiddleware, getUserBySession);
 app.patch('/server/user', authMiddleware, updateUser);
+app.get('/server/profile-validations', getProfileValidations);
 
 app.get('/server/translations', getTranslation);
 app.get('/server/languages', getLanguages);

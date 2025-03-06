@@ -9,7 +9,11 @@ import {
 } from '../utils.js';
 import connection from '../db-connection.js';
 import { CreditPlanDB, Journey, User } from '../definitions';
-import { USER_JOURNEY_CRYPTO_SECRET_KEY } from '../constants';
+import {
+  EMAIL_REGEX,
+  PASSWORD_REGEX,
+  USER_JOURNEY_CRYPTO_SECRET_KEY,
+} from '../constants';
 import crypto from 'crypto';
 
 type Plan = { name: string; credit: number; expiresOn: string };
@@ -114,7 +118,14 @@ export const signUp = async (req: Request, res: Response) => {
     const password = (req.body.password || '').trim();
     const initials = (req.body.initials || '').trim();
 
-    if (!email || !password || !initials || initials.length > 2) {
+    if (
+      !email ||
+      !new RegExp(EMAIL_REGEX).test(email) ||
+      !password ||
+      !new RegExp(PASSWORD_REGEX).test(password) ||
+      !initials ||
+      initials.length > 2
+    ) {
       res.status(400).send({ message: 'INVALID_REQUEST' });
       return;
     }
@@ -286,4 +297,28 @@ export const updateUser = async (req: Request, res: Response) => {
   ]);
 
   res.send({ message: 'UPDATED' });
+};
+
+export const getProfileValidations = async (_: Request, res: Response) => {
+  res.send({
+    email: {
+      regex: EMAIL_REGEX,
+      message: 'INVALID_EMAIL_INPUT',
+    },
+    password: {
+      min: 8,
+      max: 64,
+      policy: [
+        { name: 'upper', regex: '[A-Z]' },
+        { name: 'lower', regex: '[a-z]' },
+        { name: 'digit', regex: '\d' },
+        { name: 'special', regex: "[!#$%&'*+/=?^_`{|}~.-]" },
+      ],
+      message: 'INVALID_PASSWORD_INPUT',
+    },
+    initials: {
+      max: 2,
+      message: 'INVALID_INITIALS_INPUT',
+    },
+  });
 };
