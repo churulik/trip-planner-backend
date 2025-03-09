@@ -240,7 +240,7 @@ export const forgotPassword = async (_: Request, res: Response) => {
 export const changePassword = async (req: Request, res: Response) => {
   const password = (req.body.password || '').trim();
 
-  if (!password || password.length > 32) {
+  if (new RegExp(PASSWORD_REGEX).test(password)) {
     res.status(400).send({ message: 'INVALID_REQUEST' });
     return;
   }
@@ -252,7 +252,7 @@ export const changePassword = async (req: Request, res: Response) => {
     req.user!.id,
   ]);
 
-  res.send({ message: 'OK' });
+  res.send({ message: 'PASSWORD_HAS_BEEN_CHANGED' });
 };
 
 export const getUserBySession = async (req: Request, res: Response) => {
@@ -303,17 +303,19 @@ export const getProfileValidations = async (_: Request, res: Response) => {
   res.send({
     email: {
       regex: EMAIL_REGEX,
+      max: 254,
       message: 'INVALID_EMAIL_INPUT',
     },
     password: {
-      min: 8,
-      max: 64,
       policy: [
         { name: 'upper', regex: '[A-Z]' },
         { name: 'lower', regex: '[a-z]' },
-        { name: 'digit', regex: '\d' },
-        { name: 'special', regex: "[!#$%&'*+/=?^_`{|}~.-]" },
+        { name: 'digit', regex: '\\d' },
+        { name: 'special', regex: '[\\W_]' },
+        { name: 'range', regex: '^.{8,64}$' },
       ],
+      regex: PASSWORD_REGEX,
+      max: 64,
       message: 'INVALID_PASSWORD_INPUT',
     },
     initials: {
