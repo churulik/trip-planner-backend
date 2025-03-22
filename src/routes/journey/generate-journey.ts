@@ -1,22 +1,22 @@
 import { Request, Response } from 'express';
-import connection from '../../db-connection';
+import connection from '../../db-connection.js';
 import {
   GenerateJourneyResponse,
   Itinerary,
   OpenAiJourneyResponse,
-} from '../../definitions';
+} from '../../definitions.js';
 import {
   formatDateTimeForMariaDB,
   getUserCredits,
   setJourneyAvailableTillDate,
-} from '../../utils';
+} from '../../utils.js';
 import OpenAI from 'openai';
 import {
   CRYPTO_ALGORITHM,
   GOOGLE_PLACES_API_KEY,
   OPENAI_API_KEY,
   USER_JOURNEY_CRYPTO_SECRET_KEY,
-} from '../../constants';
+} from '../../constants.js';
 import crypto from 'crypto';
 import { nanoid } from 'nanoid';
 import axios from 'axios';
@@ -24,7 +24,7 @@ import {
   GENERATE_JOURNEY_ERROR,
   INVALID_REQUEST,
   NO_CREDITS,
-} from '../../messages';
+} from '../../messages.js';
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 

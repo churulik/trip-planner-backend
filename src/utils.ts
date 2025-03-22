@@ -1,4 +1,4 @@
-import connection from './db-connection';
+import connection from './db-connection.js';
 
 export const formatDateTimeForMariaDB = (date = new Date()) =>
   date.toISOString().slice(0, 19).replace('T', ' ');

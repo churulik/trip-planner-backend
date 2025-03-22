@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import connection from '../db-connection';
+import connection from '../db-connection.js';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import axios from 'axios';
@@ -28,7 +28,7 @@ export const getDestinations = async (_: Request, res: Response) => {
     citiesObj[firstLetter].push(cityObj);
   });
 
-  res.set('Cache-Control', 'public, max-age=5');
+  res.set('Cache-Control', 'public, max-age=86400');
   res.send(citiesObj);
 };
 

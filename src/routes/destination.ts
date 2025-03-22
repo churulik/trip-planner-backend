@@ -5,7 +5,7 @@ import { PIXABAY_API_KEY } from '../constants.js';
 import { nanoid } from 'nanoid';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import { formatDateTimeForMariaDB } from '../utils';
+import { formatDateTimeForMariaDB } from '../utils.js';
 
 export const getDestinationImageUrls = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -29,7 +29,7 @@ export const getDestinationImageUrls = async (req: Request, res: Response) => {
       const i1 = Math.floor(Math.random() * data.hits.length);
       const i2 = Math.floor(Math.random() * data.hits.length);
       const i3 = Math.floor(Math.random() * data.hits.length);
-      const baseUrl = 'http://localhost/api/image/destination/';
+      const baseUrl = 'https://localhost/api/image/destination/';
       const pixabayUrl = 'https://pixabay.com/get/';
       const [, url1] = data.hits[i1].webformatURL.split(pixabayUrl);
       const [, url2] = data.hits[i2].webformatURL.split(pixabayUrl);
@@ -90,7 +90,7 @@ export const getDestinationIcon = async (req: Request, res: Response) => {
     return;
   }
 
-  res.set('Cache-Control', 'public, max-age=10');
+  res.set('Cache-Control', 'public, max-age=86400');
   res.sendFile(imagePath, (err) => {
     if (err) {
       const imagePath = path.join(
@@ -106,5 +106,5 @@ export const insertVisitor = async (req: Request, res: Response) => {
   await connection.query(
     `insert into visitor (ip, created_on) values ('${req.ip}', '${formatDateTimeForMariaDB()}')`,
   );
-  res.send();
+  res.send({ message: 'OK' });
 };

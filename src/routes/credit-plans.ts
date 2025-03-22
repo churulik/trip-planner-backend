@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import connection from '../db-connection';
-import { formatDateTimeForMariaDB } from '../utils';
+import connection from '../db-connection.js';
+import { formatDateTimeForMariaDB } from '../utils.js';
 
 interface CreditPlanBase {
   id: string;

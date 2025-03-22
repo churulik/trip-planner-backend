@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import connection from '../../db-connection';
+import connection from '../../db-connection.js';
 
 const saveJourney = async (req: Request, res: Response) => {
   const { id } = req.body;

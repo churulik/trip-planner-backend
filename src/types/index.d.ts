@@ -1,4 +1,4 @@
-import { User } from '../definitions';
+import { User } from '../definitions.js';
 
 declare global {
   namespace Express {

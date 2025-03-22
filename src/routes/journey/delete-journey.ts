@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import connection from '../../db-connection';
+import connection from '../../db-connection.js';
 
 const deleteJourney = async (req: Request, res: Response) => {
   const { id } = req.params;

@@ -1,5 +1,6 @@
 import express, { json } from 'express';
 import {
+  authTest,
   changePassword,
   checkRegistered,
   forgotPassword,
@@ -22,14 +23,14 @@ import {
   getDestinationImage,
   getDestinations,
   getJourneyImage,
-} from './routes/api';
-import { buyCredit, getCreditPlans } from './routes/credit-plans';
+} from './routes/api.js';
+import { buyCredit, getCreditPlans } from './routes/credit-plans.js';
 import {
   deleteJourney,
   generateJourney,
   journeyDetails,
   saveJourney,
-} from './routes/journey';
+} from './routes/journey/index.js';
 
 const app = express();
 const port = 3100;
@@ -42,9 +43,15 @@ app.use((req, res, next) => {
 app.use(json());
 
 app.get('/server', (req, res) => {
-  console.log('server', req.ip);
   res.send(req.ip);
 });
+app.get('/client', (req, res) => {
+  res.send('client');
+});
+app.get('/client/test', (req, res) => {
+  res.send('client/tes');
+});
+app.get('/server/auth-test', authTest);
 app.post('/server/check-registered', checkRegistered);
 app.post('/server/sign-up', signUp);
 app.post('/server/log-in', logIn);

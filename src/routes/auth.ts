@@ -8,12 +8,12 @@ import {
   setSessionExpirationDate,
 } from '../utils.js';
 import connection from '../db-connection.js';
-import { CreditPlanDB, Journey, User } from '../definitions';
+import { CreditPlanDB, Journey, User } from '../definitions.js';
 import {
   EMAIL_REGEX,
   PASSWORD_REGEX,
   USER_JOURNEY_CRYPTO_SECRET_KEY,
-} from '../constants';
+} from '../constants.js';
 import crypto from 'crypto';
 
 type Plan = { name: string; credit: number; expiresOn: string };
@@ -95,6 +95,15 @@ const buildUserResponse = (
   journeys,
   credits,
 });
+
+export const authTest = async (_: Request, res: Response) => {
+  try {
+    await connection.query('SELECT 1');
+    res.send('OK');
+  } catch (error: any) {
+    res.status(500).send(error?.message || 'ERROR');
+  }
+};
 
 export const checkRegistered = async (req: Request, res: Response) => {
   const email = (req.body.email || '').trim();
