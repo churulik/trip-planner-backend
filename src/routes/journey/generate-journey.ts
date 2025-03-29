@@ -373,49 +373,70 @@ const generateJourney = async (req: Request, res: Response) => {
     const format =
       '{tripTitle:string;itinerary:{dayTitle:string;welcoming:string;dayActivities:{time:‘Morning’|‘Afternoon’|‘Evening’;timeActivities:{activity:string;description:string;place:string;city:string;country:string}[]}[]}[];tips:string[];}';
     const content = `Generate a ${details.duration}-day${startingDate ? ` (starting on ${startingDate})` : ''} trip to ${destination.en}. ${detailsForAi} Use the following JSON format: ${format}. Make sure timeActivities is array. Output as plain string, without beautifiers, ensuring all keys and string values are wrapped in double quotes and no trailing commas are present, ready for JSON parsing.`;
-    const data = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      store: false,
-      messages: [{ role: 'user', content }],
-      user: req.user!.id.toString(),
-    });
+    let attempts = 1;
+    const requestJourney = async () => {
+      const data = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        store: false,
+        messages: [{ role: 'user', content }],
+        user: req.user!.id.toString(),
+      });
 
-    if (data.choices?.length && data.choices[0].message.content) {
-      const responseContent = data.choices[0].message.content;
-      const { created, model, usage } = data;
+      if (data.choices?.length && data.choices[0].message.content) {
+        const responseContent = data.choices[0].message.content;
+        const { created, model, usage } = data;
 
-      await connection.execute(
-        'insert into ai_response (input, content, created, model, total_tokens) values(?, ?, ?, ?, ?)',
-        [content, responseContent, created, model, usage?.total_tokens || 0],
-      );
-
-      try {
-        aiGeneratedJourney = JSON.parse(
-          responseContent,
-        ) as OpenAiJourneyResponse;
-
-        if (!validateJson(aiGeneratedJourney, schema)) {
-          console.error('FIELDS_NOT_VALID');
-          returnError();
-          return;
-        }
-      } catch (error: any) {
-        console.error('PARSE_ERROR', error.message);
         await connection.execute(
-          'insert into ai_error_log (req, res, user_id, created_on, type) values(?, ?, ?, ?, ?)',
-          [
-            destination.en,
-            error.message,
-            req.user!.id,
-            formatDateTimeForMariaDB(),
-            'PARSE_ERROR',
-          ],
+          'insert into ai_response (input, content, created, model, total_tokens) values(?, ?, ?, ?, ?)',
+          [content, responseContent, created, model, usage?.total_tokens || 0],
         );
-        returnError();
-        return;
+
+        try {
+          const parsedAiData = JSON.parse(
+            responseContent,
+          ) as OpenAiJourneyResponse;
+
+          if (!validateJson(parsedAiData, schema)) {
+            console.error('FIELDS_NOT_VALID');
+
+            if (attempts < 5) {
+              attempts++;
+              return await requestJourney();
+            }
+
+            return null;
+          }
+
+          return parsedAiData;
+        } catch (error: any) {
+          console.error('PARSE_ERROR', error.message);
+
+          await connection.execute(
+            'insert into ai_error_log (req, res, user_id, created_on, type) values(?, ?, ?, ?, ?)',
+            [
+              destination.en,
+              error.message,
+              req.user!.id,
+              formatDateTimeForMariaDB(),
+              'PARSE_ERROR',
+            ],
+          );
+
+          if (attempts < 5) {
+            attempts++;
+            return await requestJourney();
+          }
+
+          return null;
+        }
+      } else {
+        console.error('NO_AI_RESPONSE_CONTENT');
+        return null;
       }
-    } else {
-      console.error('NO_AI_RESPONSE_CONTENT');
+    };
+
+    aiGeneratedJourney = await requestJourney();
+    if (!aiGeneratedJourney) {
       returnError();
       return;
     }
@@ -437,7 +458,6 @@ const generateJourney = async (req: Request, res: Response) => {
 
   try {
     const placesAddress = await addPlacesAddress(aiGeneratedJourney);
-    console.log(placesAddress);
     const itinerary = aiGeneratedJourney.itinerary.map((itinerary) =>
       mapItinerary(itinerary, placesAddress, googleMapsTravelMode),
     );
